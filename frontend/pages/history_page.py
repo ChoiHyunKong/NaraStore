@@ -3,7 +3,7 @@
 과거 분석 이력 조회 및 PDF 재다운로드
 """
 import streamlit as st
-from datetime import datetime
+import os
 
 
 def render():
@@ -12,24 +12,11 @@ def render():
     
     st.info("제안서 요약 및 분석의 진행 이력을 확인하고 PDF를 다시 다운로드할 수 있습니다.")
     
-    # TODO: 실제 이력 데이터 로드
-    # 임시 데이터
-    history_data = [
-        {
-            "id": 1,
-            "type": "요약",
-            "title": "2024년 스마트시티 구축 사업",
-            "date": "2024-12-03 14:30",
-            "files": ["제안요청서_1.pdf", "제안요청서_2.pdf"]
-        },
-        {
-            "id": 2,
-            "type": "분석",
-            "title": "공공데이터 활용 시스템 구축",
-            "date": "2024-12-02 10:15",
-            "files": ["제안서.hwp"]
-        }
-    ]
+    # 세션 상태에서 이력 로드
+    if 'analysis_history' not in st.session_state:
+        st.session_state['analysis_history'] = []
+    
+    history_data = st.session_state['analysis_history']
     
     if not history_data:
         st.warning("아직 분석 이력이 없습니다.")
@@ -38,8 +25,16 @@ def render():
     # 이력 목록 표시
     st.subheader(f"총 {len(history_data)}개의 이력")
     
-    for item in history_data:
-        with st.expander(f"[{item['type']}] {item['title']} - {item['date']}", expanded=False):
+    # 역순으로 표시 (최신순)
+    for idx, item in enumerate(reversed(history_data)):
+        real_idx = len(history_data) - 1 - idx
+        
+        # 제목 생성 (파일 이름 기반)
+        title = item['files'][0] if item['files'] else "제목 없음"
+        if len(item['files']) > 1:
+            title += f" 외 {len(item['files'])-1}개"
+            
+        with st.expander(f"[{item['type']}] {title} - {item['date']}", expanded=False):
             col1, col2, col3 = st.columns([3, 1, 1])
             
             with col1:
@@ -48,17 +43,25 @@ def render():
                     st.write(f"- {file}")
             
             with col2:
-                if st.button("📥 PDF 다운로드", key=f"download_{item['id']}", use_container_width=True):
-                    # TODO: 실제 PDF 다운로드 구현
+                # PDF 파일이 존재하는지 확인
+                pdf_path = item.get('pdf_path')
+                if pdf_path and os.path.exists(pdf_path):
+                    with open(pdf_path, "rb") as f:
+                        pdf_bytes = f.read()
+                        
                     st.download_button(
-                        label="PDF 저장",
-                        data=b"PDF content",
-                        file_name=f"{item['title']}.pdf",
+                        label="📥 PDF 다운로드",
+                        data=pdf_bytes,
+                        file_name=os.path.basename(pdf_path),
                         mime="application/pdf",
-                        key=f"save_{item['id']}"
+                        key=f"download_{real_idx}",
+                        use_container_width=True
                     )
+                else:
+                    st.error("PDF 파일이 만료되었습니다.")
             
             with col3:
-                if st.button("🗑️ 삭제", key=f"delete_{item['id']}", use_container_width=True):
-                    # TODO: 실제 삭제 구현
-                    st.warning("삭제하시겠습니까?")
+                if st.button("🗑️ 삭제", key=f"delete_{real_idx}", use_container_width=True):
+                    # 이력 삭제
+                    history_data.pop(real_idx)
+                    st.rerun()
