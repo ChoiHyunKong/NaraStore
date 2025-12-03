@@ -3,6 +3,15 @@ Streamlit 메인 애플리케이션
 페이지 라우팅 및 전역 설정
 """
 import streamlit as st
+import sys
+import os
+
+# 프로젝트 루트 경로를 sys.path에 추가하여 모듈 import 오류 해결
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 from config.settings import settings
 
 # 페이지 설정
@@ -19,7 +28,8 @@ def load_css():
     css_files = ["common", "header", "sidebar", "content", "footer"]
     for css_file in css_files:
         try:
-            with open(f"frontend/styles/{css_file}.css", encoding="utf-8") as f:
+            css_path = os.path.join(project_root, "frontend", "styles", f"{css_file}.css")
+            with open(css_path, encoding="utf-8") as f:
                 st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
         except FileNotFoundError:
             pass
@@ -67,11 +77,11 @@ if new_page != st.session_state['current_page']:
 
 # 페이지 라우팅
 if st.session_state['current_page'] == "제안서 요약":
-    from frontend.pages import summary_page
+    from frontend.views import summary_page
     summary_page.render()
 elif st.session_state['current_page'] == "제안서 분석":
-    from frontend.pages import analysis_page
+    from frontend.views import analysis_page
     analysis_page.render()
 elif st.session_state['current_page'] == "제안서 요약 및 분석 이력":
-    from frontend.pages import history_page
+    from frontend.views import history_page
     history_page.render()
