@@ -7,7 +7,7 @@ class GeminiConfig:
     """Gemini API 설정"""
     
     # 모델 설정
-    MODEL_NAME: str = "gemini-1.5-flash"
+    MODEL_NAME: str = "gemini-2.5-flash-preview-09-2025"
     
     # 생성 설정
     TEMPERATURE: float = 0.7

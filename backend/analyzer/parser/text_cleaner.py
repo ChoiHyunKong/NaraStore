@@ -3,7 +3,7 @@
 불필요한 문자 제거 및 정규화
 """
 import re
-from typing import str
+from typing import List, Optional
 
 
 class TextCleaner:
