@@ -126,17 +126,15 @@ def render():
                         mime="application/pdf"
                     )
                     
-                    # 세션에 결과 저장 (이력용)
-                    if 'analysis_history' not in st.session_state:
-                        st.session_state['analysis_history'] = []
+                    # 이력 저장 (JSON)
+                    from backend.storage.history_manager import history_manager
                     
-                    st.session_state['analysis_history'].append({
-                        "type": "요약",
-                        "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "files": [f.name for f in uploaded_files],
-                        "data": summary_data,
-                        "pdf_path": output_path
-                    })
+                    history_manager.add_entry(
+                        entry_type="요약",
+                        files=[f.name for f in uploaded_files],
+                        data=summary_data,
+                        pdf_path=output_path
+                    )
                     
                     st.session_state['analysis_in_progress'] = False
                     
