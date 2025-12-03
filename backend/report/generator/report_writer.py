@@ -18,10 +18,24 @@ class ReportWriter(FPDF):
         
         # 한글 폰트 설정 (시스템 폰트 사용)
         try:
-            # Windows 기본 한글 폰트
+            # Windows 기본 한글 폰트 경로
             font_path = "C:\\Windows\\Fonts\\malgun.ttf"
+            font_bold_path = "C:\\Windows\\Fonts\\malgunbd.ttf"
+            
             if os.path.exists(font_path):
                 self.add_font("Malgun", "", font_path, uni=True)
+                
+                # 볼드체 등록
+                if os.path.exists(font_bold_path):
+                    self.add_font("Malgun", "B", font_bold_path, uni=True)
+                    self.add_font("Malgun", "BI", font_bold_path, uni=True)  # Bold Italic도 Bold로 대체
+                else:
+                    self.add_font("Malgun", "B", font_path, uni=True)
+                    self.add_font("Malgun", "BI", font_path, uni=True)
+                
+                # 이탤릭체 등록 (별도 파일 없으므로 일반/볼드로 대체)
+                self.add_font("Malgun", "I", font_path, uni=True)
+                
                 self.font_family = "Malgun"
             else:
                 self.font_family = "Arial"
