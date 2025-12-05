@@ -71,14 +71,10 @@ class ReportWriter(FPDF):
             self.multi_cell(0, 8, subtitle, 0, 'C')
         
         # 하단 정보
-        self.set_y(-50)
+        self.set_y(-40)
         self.set_font(self.font_family, '', 10)
         self.set_text_color(100, 100, 100)
         self.cell(0, 8, f"생성일: {datetime.now().strftime('%Y년 %m월 %d일 %H:%M')}", 0, 1, 'C')
-        
-        # 하단 장식 라인
-        self.set_fill_color(41, 128, 185)
-        self.rect(0, 289, 210, 8, 'F')
         
         self.set_text_color(0, 0, 0)
     
@@ -88,9 +84,7 @@ class ReportWriter(FPDF):
             self.set_font(self.font_family, '', 9)
             self.set_text_color(100, 100, 100)
             self.cell(0, 8, self.title_text, 0, 1, 'R')
-            self.set_draw_color(200, 200, 200)
-            self.line(10, 15, 200, 15)
-            self.ln(5)
+            self.ln(3)
             self.set_text_color(0, 0, 0)
     
     def footer(self):
@@ -98,8 +92,6 @@ class ReportWriter(FPDF):
         self.set_y(-15)
         self.set_font(self.font_family, '', 8)
         self.set_text_color(100, 100, 100)
-        self.set_draw_color(200, 200, 200)
-        self.line(10, 282, 200, 282)
         self.cell(0, 10, f'- {self.page_no()} -', 0, 0, 'C')
     
     def section_title(self, title: str, color=(41, 128, 185)):
@@ -126,120 +118,145 @@ class ReportWriter(FPDF):
         self.ln(3)
     
     def info_box(self, label: str, value: str, color=(230, 126, 34)):
-        """정보 박스 (강조)"""
-        self.set_fill_color(*color)
-        self.set_text_color(255, 255, 255)
+        """정보 박스 (강조) - 간단 형식"""
         self.set_font(self.font_family, 'B', 10)
-        self.cell(50, 8, f"  {label}", 0, 0, 'L', True)
-        self.set_fill_color(245, 245, 245)
+        self.set_text_color(*color)
+        # 값이 너무 길면 자르기
+        display_value = value if len(str(value)) < 80 else str(value)[:80] + "..."
+        self.multi_cell(0, 6, f"▶ {label}: {display_value}")
         self.set_text_color(0, 0, 0)
-        self.set_font(self.font_family, '', 10)
-        self.cell(0, 8, f"  {value}", 0, 1, 'L', True)
-        self.ln(2)
+        self.ln(1)
     
     def separator(self):
         """구분선"""
-        self.set_draw_color(200, 200, 200)
-        self.line(10, self.get_y(), 200, self.get_y())
-        self.ln(5)
+        self.ln(3)
 
 
 class SummaryReportGenerator:
     """제안서 요약 레포트 생성기"""
     
     @staticmethod
+    def _format_key(key: str) -> str:
+        """키 이름을 읽기 좋게 변환"""
+        translations = {
+            'total_amount': '총 금액',
+            'vat_included': '부가세 포함',
+            'budget_type': '예산 유형',
+            'total_period': '총 기간',
+            'start_date': '시작일',
+            'end_date': '종료일',
+            'proposal_deadline': '제안서 마감',
+            'onsite_required': '상주 필요',
+            'onsite_count': '상주 인원',
+            'onsite_location': '상주 장소',
+            'key_personnel': '핵심 인력',
+            'role': '역할',
+            'count': '인원',
+            'skills': '필요 역량',
+            'duration': '기간',
+            'certification': '자격 요건',
+            'human': '인력 요구사항',
+            'technical': '기술 요구사항',
+            'type': '유형',
+            'name': '이름',
+            'version': '버전',
+            'reason': '사유',
+            'task_name': '과업명',
+            'description': '설명',
+        }
+        return translations.get(key, key.replace('_', ' ').title())
+    
+    @staticmethod
     def _dict_to_text(data, indent=0) -> str:
         """딕셔너리를 읽기 쉬운 텍스트로 변환"""
+        prefix = "  " * indent
+        
+        if data is None:
+            return ""
+        
         if isinstance(data, str):
             return data
-        elif isinstance(data, dict):
+        
+        if isinstance(data, bool):
+            return "예" if data else "아니오"
+        
+        if isinstance(data, (int, float)):
+            return str(data)
+        
+        if isinstance(data, list):
+            if not data:
+                return "없음"
+            lines = []
+            for item in data:
+                if isinstance(item, dict):
+                    # 딕셔너리 리스트의 경우 각 항목을 정리
+                    item_lines = []
+                    for k, v in item.items():
+                        key_name = SummaryReportGenerator._format_key(k)
+                        if isinstance(v, list):
+                            v_str = ", ".join(str(x) for x in v)
+                        else:
+                            v_str = str(v) if v else "정보 없음"
+                        item_lines.append(f"{key_name}: {v_str}")
+                    lines.append(f"{prefix}- " + " / ".join(item_lines))
+                else:
+                    lines.append(f"{prefix}- {item}")
+            return "\n".join(lines)
+        
+        if isinstance(data, dict):
+            if not data:
+                return "없음"
             lines = []
             for key, value in data.items():
-                key_name = key.replace("_", " ").title()
+                key_name = SummaryReportGenerator._format_key(key)
+                
                 if isinstance(value, str):
-                    lines.append(f"{'  ' * indent}• {key_name}: {value}")
+                    lines.append(f"{prefix}• {key_name}: {value}")
+                elif isinstance(value, bool):
+                    lines.append(f"{prefix}• {key_name}: {'예' if value else '아니오'}")
+                elif isinstance(value, (int, float)):
+                    lines.append(f"{prefix}• {key_name}: {value}")
                 elif isinstance(value, list):
-                    lines.append(f"{'  ' * indent}• {key_name}:")
-                    for item in value:
-                        if isinstance(item, dict):
-                            lines.append(SummaryReportGenerator._dict_to_text(item, indent+1))
-                        else:
-                            lines.append(f"{'  ' * (indent+1)}- {item}")
+                    if value:
+                        lines.append(f"{prefix}• {key_name}:")
+                        lines.append(SummaryReportGenerator._dict_to_text(value, indent + 1))
+                    else:
+                        lines.append(f"{prefix}• {key_name}: 없음")
                 elif isinstance(value, dict):
-                    lines.append(f"{'  ' * indent}• {key_name}:")
-                    lines.append(SummaryReportGenerator._dict_to_text(value, indent+1))
+                    lines.append(f"{prefix}• {key_name}:")
+                    lines.append(SummaryReportGenerator._dict_to_text(value, indent + 1))
+                else:
+                    lines.append(f"{prefix}• {key_name}: {str(value)}")
             return "\n".join(lines)
-        elif isinstance(data, list):
-            return "\n".join([f"- {item}" if isinstance(item, str) else SummaryReportGenerator._dict_to_text(item, indent) for item in data])
-        else:
-            return str(data)
+        
+        return str(data)
     
     @staticmethod
     def generate(summary_data: Dict, output_path: str) -> tuple[bool, str]:
-        """
-        요약 레포트 PDF 생성
-        """
+        """요약 레포트 PDF 생성"""
         try:
             logger.info("요약 레포트 생성 시작")
             
             pdf = ReportWriter()
-            
-            # 표지 페이지
-            project_title = summary_data.get("project_title", "제안요청서 분석")
-            pdf.add_cover_page(project_title, "요약 레포트")
-            
-            # 본문 시작
             pdf.add_page()
+            
+            # 생성 일시
+            pdf.set_font(pdf.font_family, '', 9)
+            pdf.cell(0, 6, f'생성일시: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
+            pdf.ln(5)
             
             section_num = 1
             
+            # 프로젝트 제목
+            if "project_title" in summary_data:
+                pdf.set_font(pdf.font_family, 'B', 14)
+                pdf.multi_cell(0, 8, summary_data["project_title"])
+                pdf.ln(5)
+            
             # 프로젝트 개요
             if "project_overview" in summary_data:
-                pdf.section_title(f"{section_num}. 프로젝트 개요")
+                pdf.chapter_title(f"{section_num}. 프로젝트 개요")
                 pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["project_overview"]))
-                section_num += 1
-            
-            # 예산 및 일정 (핵심 정보를 info_box로 표시)
-            if "budget" in summary_data or "schedule" in summary_data:
-                pdf.section_title(f"{section_num}. 핵심 정보", color=(46, 204, 113))
-                
-                if "budget" in summary_data:
-                    budget = summary_data["budget"]
-                    if isinstance(budget, dict):
-                        amount = budget.get("total_amount", "정보 없음")
-                        vat = budget.get("vat_included", "")
-                        pdf.info_box("예산", f"{amount} ({vat})" if vat else amount)
-                    else:
-                        pdf.info_box("예산", str(budget))
-                
-                if "schedule" in summary_data:
-                    sch = summary_data["schedule"]
-                    if isinstance(sch, dict):
-                        period = sch.get("total_period", "정보 없음")
-                        deadline = sch.get("proposal_deadline", "")
-                        pdf.info_box("사업 기간", period, color=(52, 152, 219))
-                        if deadline and deadline != "정보 없음":
-                            pdf.info_box("제안서 마감", deadline, color=(231, 76, 60))
-                
-                if "personnel" in summary_data:
-                    pers = summary_data["personnel"]
-                    if isinstance(pers, dict):
-                        onsite = pers.get("onsite_required", "정보 없음")
-                        pdf.info_box("상주 인력", onsite, color=(155, 89, 182))
-                
-                section_num += 1
-                pdf.separator()
-            
-            # 배경 및 필요성
-            if "background" in summary_data:
-                pdf.chapter_title(f"{section_num}. 배경 및 필요성")
-                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["background"]))
-                section_num += 1
-            
-            # 프로젝트 목표
-            if "project_goal" in summary_data:
-                pdf.chapter_title(f"{section_num}. 프로젝트 목표")
-                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["project_goal"]))
                 section_num += 1
             
             # 예산 정보
@@ -258,6 +275,18 @@ class SummaryReportGenerator:
             if "personnel" in summary_data:
                 pdf.chapter_title(f"{section_num}. 인력 요구사항")
                 pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["personnel"]))
+                section_num += 1
+            
+            # 배경 및 필요성
+            if "background" in summary_data:
+                pdf.chapter_title(f"{section_num}. 배경 및 필요성")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["background"]))
+                section_num += 1
+            
+            # 프로젝트 목표
+            if "project_goal" in summary_data:
+                pdf.chapter_title(f"{section_num}. 프로젝트 목표")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["project_goal"]))
                 section_num += 1
             
             # 주요 과업
@@ -318,17 +347,7 @@ class AnalysisReportGenerator:
     
     @staticmethod
     def generate(analysis_data: Dict, strategy_text: str, output_path: str) -> tuple[bool, str]:
-        """
-        분석 레포트 PDF 생성
-        
-        Args:
-            analysis_data: 분석 데이터
-            strategy_text: 전략 텍스트
-            output_path: 출력 파일 경로
-            
-        Returns:
-            (성공 여부, 메시지)
-        """
+        """분석 레포트 PDF 생성"""
         try:
             logger.info("분석 레포트 생성 시작")
             
@@ -340,26 +359,52 @@ class AnalysisReportGenerator:
             pdf.cell(0, 6, f'생성일시: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
             pdf.ln(5)
             
+            # 제목
+            pdf.set_font(pdf.font_family, 'B', 16)
+            pdf.cell(0, 10, "제안서 상세 분석 결과", 0, 1, 'C')
+            pdf.ln(5)
+            
+            section_num = 1
+            
             # 분석 데이터 표시
             if "raw_text" in analysis_data:
-                # JSON 파싱 실패 시 원본 텍스트
                 pdf.chapter_title("분석 결과")
-                pdf.chapter_body(analysis_data["raw_text"][:3000])  # 최대 3000자
+                pdf.chapter_body(analysis_data["raw_text"][:3000])
             else:
-                # 구조화된 데이터
+                # 섹션별 한글 제목
+                section_titles = {
+                    'functional_requirements': '기능적 요구사항',
+                    'non_functional_requirements': '비기능적 요구사항',
+                    'technical_requirements': '기술적 요구사항',
+                    'required_resources': '필요 자원',
+                    'constraints': '제약 사항',
+                    'evaluation_criteria': '평가 기준',
+                    'key_deliverables': '주요 산출물',
+                    'risks': '위험 요소',
+                    'success_factors': '성공 요인',
+                }
+                
                 for key, value in analysis_data.items():
-                    pdf.chapter_title(key.replace("_", " ").title())
-                    if isinstance(value, list):
-                        text = "\n".join([f"- {item}" for item in value])
-                    else:
-                        text = str(value)
-                    pdf.chapter_body(text[:1000])  # 각 섹션 최대 1000자
+                    title = section_titles.get(key, key.replace("_", " ").title())
+                    pdf.chapter_title(f"{section_num}. {title}")
+                    
+                    # SummaryReportGenerator의 포맷 함수 사용
+                    formatted_text = SummaryReportGenerator._dict_to_text(value)
+                    pdf.chapter_body(formatted_text[:2000])
+                    section_num += 1
             
             # 수주 전략
             if strategy_text:
                 pdf.add_page()
-                pdf.chapter_title("수주 전략")
-                pdf.chapter_body(strategy_text[:3000])  # 최대 3000자
+                pdf.set_font(pdf.font_family, 'B', 14)
+                pdf.cell(0, 10, "수주 전략", 0, 1, 'L')
+                pdf.ln(3)
+                
+                # 전략 텍스트도 파싱 시도
+                if isinstance(strategy_text, dict):
+                    pdf.chapter_body(SummaryReportGenerator._dict_to_text(strategy_text))
+                else:
+                    pdf.chapter_body(str(strategy_text)[:3000])
             
             # PDF 저장
             pdf.output(output_path)

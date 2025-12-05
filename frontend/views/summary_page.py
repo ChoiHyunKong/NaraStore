@@ -114,15 +114,17 @@ def render():
                         st.session_state['analysis_in_progress'] = False
                         return
                     
-                    # 완료
+                    # 완료 - 결과를 session_state에 저장
                     progress_bar.progress(1.0)
                     total_time = time.time() - start_time
                     status_text.text("✅ 완료!")
                     time_text.caption(f"✅ 총 소요 시간: {total_time:.1f}초")
-                    st.success(f"분석 완료! (소요 시간: {total_time:.1f}초)")
                     
-                    # 결과 표시 - 레포트 형식
-                    st.markdown("---")
+                    # 결과 저장 (PDF 다운로드 후에도 유지)
+                    st.session_state['summary_result'] = summary_data
+                    st.session_state['summary_pdf_path'] = output_path
+                    st.session_state['analysis_in_progress'] = False
+                    st.session_state['analysis_just_completed'] = True
                     
                     # 프로젝트 제목
                     if "project_title" in summary_data:
@@ -390,6 +392,79 @@ def render():
                 st.session_state['current_page'] = "제안서 분석"
                 st.session_state['uploaded_files'] = uploaded_files
                 st.rerun()
+        
+        # 저장된 분석 결과 표시 (PDF 다운로드 후에도 유지)
+        if 'summary_result' in st.session_state and st.session_state['summary_result']:
+            display_summary_result(st.session_state['summary_result'], 
+                                   st.session_state.get('summary_pdf_path', ''))
     
     else:
         st.info("제안서 파일을 업로드해주세요.")
+
+
+def display_summary_result(summary_data: dict, pdf_path: str):
+    """요약 결과를 화면에 표시"""
+    import os
+    
+    st.markdown("---")
+    st.success("✅ 분석 완료!")
+    
+    # PDF 다운로드 버튼
+    if pdf_path and os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+        st.download_button(
+            label="📥 PDF 다운로드",
+            data=pdf_bytes,
+            file_name=os.path.basename(pdf_path),
+            mime="application/pdf",
+            key="summary_pdf_download"
+        )
+    
+    st.markdown("---")
+    
+    # 프로젝트 제목
+    if "project_title" in summary_data:
+        st.markdown(f"## 📋 {summary_data['project_title']}")
+    else:
+        st.markdown("## 📋 제안요청서 분석 결과")
+    
+    # 프로젝트 개요
+    if "project_overview" in summary_data:
+        st.markdown("### 📌 프로젝트 개요")
+        st.write(summary_data["project_overview"])
+    
+    # 예산 정보
+    if "budget" in summary_data:
+        st.markdown("### 💰 예산 정보")
+        budget = summary_data["budget"]
+        if isinstance(budget, dict):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("총 예산", budget.get("total_amount", "정보 없음"))
+            with col2:
+                st.write(f"**부가세:** {budget.get('vat_included', '정보 없음')}")
+        else:
+            st.write(budget)
+    
+    # 일정 정보
+    if "schedule" in summary_data:
+        st.markdown("### 📅 사업 일정")
+        sch = summary_data["schedule"]
+        if isinstance(sch, dict):
+            st.write(f"**총 기간:** {sch.get('total_period', '정보 없음')}")
+            if sch.get('proposal_deadline'):
+                st.error(f"📢 **제안서 마감:** {sch.get('proposal_deadline')}")
+        else:
+            st.write(sch)
+    
+    # 인력 요구사항
+    if "personnel" in summary_data:
+        st.markdown("### 👥 인력 요구사항")
+        pers = summary_data["personnel"]
+        if isinstance(pers, dict):
+            st.write(f"**상주 필요:** {pers.get('onsite_required', '정보 없음')}")
+            if pers.get('onsite_count'):
+                st.write(f"**상주 인원:** {pers.get('onsite_count')}")
+        else:
+            st.write(pers)

@@ -282,7 +282,8 @@ def render():
                     data=pdf_bytes,
                     file_name=f"제안서_분석_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
                     mime="application/pdf",
-                    use_container_width=True
+                    use_container_width=True,
+                    key="analysis_pdf_download"
                 )
                 
                 # 이력 저장 (JSON)
@@ -297,6 +298,12 @@ def render():
                     references=reference_result
                 )
                 
+                # 결과를 session_state에 저장 (PDF 다운로드 후에도 유지)
+                st.session_state['analysis_result'] = analysis_result
+                st.session_state['strategy_result'] = strategy_result
+                st.session_state['reference_result'] = reference_result
+                st.session_state['analysis_pdf_path'] = output_path
+                
                 # 분석 완료 플래그 설정 (페이지 이동 경고용)
                 st.session_state['analysis_in_progress'] = False
                 st.session_state['analysis_just_completed'] = True
@@ -305,6 +312,80 @@ def render():
                 st.error(f"오류 발생: {str(e)}")
                 st.session_state['analysis_in_progress'] = False
                 st.session_state['analysis_just_completed'] = False
+        
+        # 저장된 분석 결과 표시 (PDF 다운로드 후에도 유지)
+        if 'analysis_result' in st.session_state and st.session_state['analysis_result']:
+            display_analysis_result(
+                st.session_state['analysis_result'],
+                st.session_state.get('strategy_result'),
+                st.session_state.get('reference_result'),
+                st.session_state.get('analysis_pdf_path', '')
+            )
     
     else:
         st.info("제안서 파일을 업로드해주세요.")
+
+
+def display_analysis_result(analysis_result: dict, strategy_result, reference_result, pdf_path: str):
+    """분석 결과를 화면에 표시"""
+    import os
+    
+    st.markdown("---")
+    st.success("✅ 분석 완료!")
+    
+    # PDF 다운로드 버튼
+    if pdf_path and os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+        st.download_button(
+            label="📥 분석 PDF 다운로드",
+            data=pdf_bytes,
+            file_name=os.path.basename(pdf_path),
+            mime="application/pdf",
+            key="analysis_pdf_display"
+        )
+    
+    # 분석 결과 탭
+    tab1, tab2, tab3 = st.tabs(["요구사항 분석", "수주 전략", "유사 프로젝트"])
+    
+    with tab1:
+        st.markdown("### 📋 상세 요구사항 분석")
+        if isinstance(analysis_result, dict):
+            for key, value in analysis_result.items():
+                st.markdown(f"**{key.replace('_', ' ').title()}**")
+                if isinstance(value, list):
+                    for item in value:
+                        st.write(f"- {item}")
+                elif isinstance(value, dict):
+                    for k, v in value.items():
+                        st.write(f"  • {k}: {v}")
+                else:
+                    st.write(value)
+                st.markdown("---")
+    
+    with tab2:
+        st.markdown("### 🎯 수주 전략")
+        if strategy_result:
+            if isinstance(strategy_result, dict):
+                for key, value in strategy_result.items():
+                    st.markdown(f"**{key.replace('_', ' ').title()}**")
+                    st.write(value)
+            else:
+                st.write(strategy_result)
+        else:
+            st.info("수주 전략 정보가 없습니다.")
+    
+    with tab3:
+        st.markdown("### 📚 유사 프로젝트")
+        if reference_result:
+            if isinstance(reference_result, list):
+                for ref in reference_result:
+                    if isinstance(ref, dict):
+                        st.write(f"**{ref.get('name', '프로젝트')}**")
+                        st.write(ref.get('description', ''))
+                    else:
+                        st.write(f"- {ref}")
+            else:
+                st.write(reference_result)
+        else:
+            st.info("유사 프로젝트 정보가 없습니다.")

@@ -95,28 +95,36 @@ with st.sidebar:
     st.caption("📦 v1.1.0")
     st.caption("🚀 NaraStore")
 
-# 페이지 변경 시 경고 (분석 완료 후 또는 진행 중)
+# 페이지 변경 처리
 if new_page != st.session_state['current_page']:
-    # 분석 진행 중이거나 방금 완료된 경우 경고 표시
-    show_warning = (
-        st.session_state.get('analysis_in_progress', False) or 
-        st.session_state.get('analysis_just_completed', False)
-    )
-    
-    if show_warning:
-        st.warning("⚠️ 페이지 이동 시 진행된 내용은 사라지며 제안서 요약 및 분석 이력에서 볼 수 있습니다.")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("확인", key="confirm_navigation", use_container_width=True):
-                st.session_state['current_page'] = new_page
-                st.session_state['analysis_in_progress'] = False
-                st.session_state['analysis_just_completed'] = False
-                st.rerun()
-        with col2:
-            if st.button("취소", key="cancel_navigation", use_container_width=True):
-                st.rerun()
+    # 분석 진행 중이거나 방금 완료된 경우
+    if st.session_state.get('analysis_in_progress', False) or st.session_state.get('analysis_just_completed', False):
+        # 확인 대기 상태 설정
+        if 'pending_page' not in st.session_state:
+            st.session_state['pending_page'] = new_page
     else:
+        # 분석 중이 아니면 바로 이동
         st.session_state['current_page'] = new_page
+
+# 페이지 이동 경고 팝업 (메인 영역 상단에 표시)
+if 'pending_page' in st.session_state:
+    st.warning("⚠️ **페이지를 이동하시겠습니까?**")
+    st.info("진행된 분석 내용은 '제안서 요약 및 분석 이력'에서 다시 확인할 수 있습니다.")
+    
+    col1, col2, col3 = st.columns([1, 1, 2])
+    with col1:
+        if st.button("✅ 이동", key="confirm_nav", type="primary", use_container_width=True):
+            st.session_state['current_page'] = st.session_state['pending_page']
+            del st.session_state['pending_page']
+            st.session_state['analysis_in_progress'] = False
+            st.session_state['analysis_just_completed'] = False
+            st.rerun()
+    with col2:
+        if st.button("❌ 취소", key="cancel_nav", use_container_width=True):
+            del st.session_state['pending_page']
+            st.rerun()
+    
+    st.stop()  # 경고 표시 중에는 아래 콘텐츠 실행 중지
 
 # 페이지 라우팅
 if st.session_state['current_page'] == "제안서 요약":
