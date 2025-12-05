@@ -14,57 +14,134 @@ class ReportWriter(FPDF):
     
     def __init__(self):
         super().__init__()
-        self.set_auto_page_break(auto=True, margin=15)
+        self.set_auto_page_break(auto=True, margin=20)
         
         # 한글 폰트 설정 (시스템 폰트 사용)
         try:
-            # Windows 기본 한글 폰트 경로
             font_path = "C:\\Windows\\Fonts\\malgun.ttf"
             font_bold_path = "C:\\Windows\\Fonts\\malgunbd.ttf"
             
             if os.path.exists(font_path):
                 self.add_font("Malgun", "", font_path, uni=True)
-                
-                # 볼드체 등록
                 if os.path.exists(font_bold_path):
                     self.add_font("Malgun", "B", font_bold_path, uni=True)
-                    self.add_font("Malgun", "BI", font_bold_path, uni=True)  # Bold Italic도 Bold로 대체
+                    self.add_font("Malgun", "BI", font_bold_path, uni=True)
                 else:
                     self.add_font("Malgun", "B", font_path, uni=True)
                     self.add_font("Malgun", "BI", font_path, uni=True)
-                
-                # 이탤릭체 등록 (별도 파일 없으므로 일반/볼드로 대체)
                 self.add_font("Malgun", "I", font_path, uni=True)
-                
                 self.font_family = "Malgun"
             else:
                 self.font_family = "Arial"
         except:
             self.font_family = "Arial"
+        
+        self.title_text = "NaraStore 제안서 분석 레포트"
+    
+    def add_cover_page(self, title: str, subtitle: str = ""):
+        """표지 페이지 추가"""
+        self.add_page()
+        
+        # 상단 장식 라인
+        self.set_fill_color(41, 128, 185)  # 파란색
+        self.rect(0, 0, 210, 8, 'F')
+        
+        # 제목 영역
+        self.ln(60)
+        self.set_font(self.font_family, 'B', 28)
+        self.set_text_color(41, 128, 185)
+        self.multi_cell(0, 15, "NaraStore", 0, 'C')
+        
+        self.set_font(self.font_family, 'B', 18)
+        self.set_text_color(0, 0, 0)
+        self.multi_cell(0, 12, "제안서 분석 레포트", 0, 'C')
+        
+        self.ln(20)
+        
+        # 프로젝트 제목
+        if title:
+            self.set_font(self.font_family, 'B', 14)
+            self.set_text_color(52, 73, 94)
+            self.multi_cell(0, 10, title, 0, 'C')
+        
+        if subtitle:
+            self.ln(5)
+            self.set_font(self.font_family, '', 11)
+            self.set_text_color(100, 100, 100)
+            self.multi_cell(0, 8, subtitle, 0, 'C')
+        
+        # 하단 정보
+        self.set_y(-50)
+        self.set_font(self.font_family, '', 10)
+        self.set_text_color(100, 100, 100)
+        self.cell(0, 8, f"생성일: {datetime.now().strftime('%Y년 %m월 %d일 %H:%M')}", 0, 1, 'C')
+        
+        # 하단 장식 라인
+        self.set_fill_color(41, 128, 185)
+        self.rect(0, 289, 210, 8, 'F')
+        
+        self.set_text_color(0, 0, 0)
     
     def header(self):
         """페이지 헤더"""
-        self.set_font(self.font_family, 'B', 15)
-        self.cell(0, 10, 'NaraStore - 제안서 분석 레포트', 0, 1, 'C')
-        self.ln(5)
+        if self.page_no() > 1:  # 표지 제외
+            self.set_font(self.font_family, '', 9)
+            self.set_text_color(100, 100, 100)
+            self.cell(0, 8, self.title_text, 0, 1, 'R')
+            self.set_draw_color(200, 200, 200)
+            self.line(10, 15, 200, 15)
+            self.ln(5)
+            self.set_text_color(0, 0, 0)
     
     def footer(self):
         """페이지 푸터"""
         self.set_y(-15)
-        self.set_font(self.font_family, 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
+        self.set_font(self.font_family, '', 8)
+        self.set_text_color(100, 100, 100)
+        self.set_draw_color(200, 200, 200)
+        self.line(10, 282, 200, 282)
+        self.cell(0, 10, f'- {self.page_no()} -', 0, 0, 'C')
+    
+    def section_title(self, title: str, color=(41, 128, 185)):
+        """섹션 제목 (색상 강조)"""
+        self.set_fill_color(*color)
+        self.set_text_color(255, 255, 255)
+        self.set_font(self.font_family, 'B', 12)
+        self.cell(0, 10, f"  {title}", 0, 1, 'L', True)
+        self.set_text_color(0, 0, 0)
+        self.ln(3)
     
     def chapter_title(self, title: str):
         """챕터 제목"""
-        self.set_font(self.font_family, 'B', 12)
-        self.cell(0, 10, title, 0, 1, 'L')
+        self.set_font(self.font_family, 'B', 11)
+        self.set_text_color(52, 73, 94)
+        self.cell(0, 8, title, 0, 1, 'L')
+        self.set_text_color(0, 0, 0)
         self.ln(2)
     
     def chapter_body(self, body: str):
         """챕터 본문"""
         self.set_font(self.font_family, '', 10)
         self.multi_cell(0, 6, body)
-        self.ln()
+        self.ln(3)
+    
+    def info_box(self, label: str, value: str, color=(230, 126, 34)):
+        """정보 박스 (강조)"""
+        self.set_fill_color(*color)
+        self.set_text_color(255, 255, 255)
+        self.set_font(self.font_family, 'B', 10)
+        self.cell(50, 8, f"  {label}", 0, 0, 'L', True)
+        self.set_fill_color(245, 245, 245)
+        self.set_text_color(0, 0, 0)
+        self.set_font(self.font_family, '', 10)
+        self.cell(0, 8, f"  {value}", 0, 1, 'L', True)
+        self.ln(2)
+    
+    def separator(self):
+        """구분선"""
+        self.set_draw_color(200, 200, 200)
+        self.line(10, self.get_y(), 200, self.get_y())
+        self.ln(5)
 
 
 class SummaryReportGenerator:
@@ -101,38 +178,57 @@ class SummaryReportGenerator:
     def generate(summary_data: Dict, output_path: str) -> tuple[bool, str]:
         """
         요약 레포트 PDF 생성
-        
-        Args:
-            summary_data: 요약 데이터
-            output_path: 출력 파일 경로
-            
-        Returns:
-            (성공 여부, 메시지)
         """
         try:
             logger.info("요약 레포트 생성 시작")
             
             pdf = ReportWriter()
-            pdf.add_page()
             
-            # 생성 일시
-            pdf.set_font(pdf.font_family, '', 9)
-            pdf.cell(0, 6, f'생성일시: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
-            pdf.ln(5)
+            # 표지 페이지
+            project_title = summary_data.get("project_title", "제안요청서 분석")
+            pdf.add_cover_page(project_title, "요약 레포트")
+            
+            # 본문 시작
+            pdf.add_page()
             
             section_num = 1
             
-            # 프로젝트 제목
-            if "project_title" in summary_data:
-                pdf.set_font(pdf.font_family, 'B', 14)
-                pdf.multi_cell(0, 8, summary_data["project_title"])
-                pdf.ln(5)
-            
             # 프로젝트 개요
             if "project_overview" in summary_data:
-                pdf.chapter_title(f"{section_num}. 프로젝트 개요")
+                pdf.section_title(f"{section_num}. 프로젝트 개요")
                 pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["project_overview"]))
                 section_num += 1
+            
+            # 예산 및 일정 (핵심 정보를 info_box로 표시)
+            if "budget" in summary_data or "schedule" in summary_data:
+                pdf.section_title(f"{section_num}. 핵심 정보", color=(46, 204, 113))
+                
+                if "budget" in summary_data:
+                    budget = summary_data["budget"]
+                    if isinstance(budget, dict):
+                        amount = budget.get("total_amount", "정보 없음")
+                        vat = budget.get("vat_included", "")
+                        pdf.info_box("예산", f"{amount} ({vat})" if vat else amount)
+                    else:
+                        pdf.info_box("예산", str(budget))
+                
+                if "schedule" in summary_data:
+                    sch = summary_data["schedule"]
+                    if isinstance(sch, dict):
+                        period = sch.get("total_period", "정보 없음")
+                        deadline = sch.get("proposal_deadline", "")
+                        pdf.info_box("사업 기간", period, color=(52, 152, 219))
+                        if deadline and deadline != "정보 없음":
+                            pdf.info_box("제안서 마감", deadline, color=(231, 76, 60))
+                
+                if "personnel" in summary_data:
+                    pers = summary_data["personnel"]
+                    if isinstance(pers, dict):
+                        onsite = pers.get("onsite_required", "정보 없음")
+                        pdf.info_box("상주 인력", onsite, color=(155, 89, 182))
+                
+                section_num += 1
+                pdf.separator()
             
             # 배경 및 필요성
             if "background" in summary_data:

@@ -9,33 +9,37 @@ from backend.analyzer.gemini.request import create_request_handler
 from backend.analyzer.gemini.response import response_parser
 from backend.analyzer.prompt.builder import prompt_builder
 from backend.utils.logger import logger
+from backend.utils.cache import analysis_cache
 
 
 class ProposalAnalyzer:
     """제안서 분석 클래스"""
     
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str = None, use_cache: bool = True):
         """
         분석기 초기화
         
         Args:
             api_key: Gemini API 키
+            use_cache: 캐싱 사용 여부
         """
         self.client = create_client(api_key)
         self.request_handler = create_request_handler(self.client)
+        self.use_cache = use_cache
     
     def summarize(self, document_text: str) -> tuple[bool, Dict | str]:
         """
-        제안서 요약
-        
-        Args:
-            document_text: 통합된 제안서 텍스트
-            
-        Returns:
-            (성공 여부, 요약 결과 또는 에러 메시지)
+        제안서 요약 (캐싱 지원)
         """
         try:
             logger.info("제안서 요약 시작")
+            
+            # 캐시 확인
+            if self.use_cache:
+                cached = analysis_cache.get(document_text, "summary")
+                if cached:
+                    logger.info("캐시에서 요약 결과 반환")
+                    return True, cached
             
             # 요약 프롬프트 생성
             prompt = self._build_summary_prompt(document_text)
@@ -50,8 +54,11 @@ class ProposalAnalyzer:
             success, parsed = response_parser.parse_json(response)
             
             if not success:
-                # JSON 파싱 실패 시 원본 텍스트 반환
                 return True, {"raw_text": response}
+            
+            # 캐시 저장
+            if self.use_cache:
+                analysis_cache.set(document_text, "summary", parsed)
             
             logger.info("제안서 요약 완료")
             return True, parsed
@@ -61,17 +68,16 @@ class ProposalAnalyzer:
             return False, f"요약 실패: {str(e)}"
     
     def analyze_detailed(self, document_text: str) -> tuple[bool, Dict | str]:
-        """
-        제안서 상세 분석
-        
-        Args:
-            document_text: 통합된 제안서 텍스트
-            
-        Returns:
-            (성공 여부, 분석 결과 또는 에러 메시지)
-        """
+        """제안서 상세 분석 (캐싱 지원)"""
         try:
             logger.info("제안서 상세 분석 시작")
+            
+            # 캐시 확인
+            if self.use_cache:
+                cached = analysis_cache.get(document_text, "analysis")
+                if cached:
+                    logger.info("캐시에서 분석 결과 반환")
+                    return True, cached
             
             # 분석 프롬프트 생성
             prompt = prompt_builder.build_analysis_prompt(document_text)
@@ -90,6 +96,10 @@ class ProposalAnalyzer:
             
             if not success:
                 return True, {"raw_text": response}
+            
+            # 캐시 저장
+            if self.use_cache:
+                analysis_cache.set(document_text, "analysis", parsed)
             
             logger.info("제안서 상세 분석 완료")
             return True, parsed

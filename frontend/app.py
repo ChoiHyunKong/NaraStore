@@ -55,18 +55,45 @@ st.markdown("---")
 
 # 사이드바 메뉴
 with st.sidebar:
-    st.header("메뉴")
+    st.markdown("### 🗂️ 메뉴")
+    
+    # 메뉴 아이템 (아이콘 포함)
+    menu_items = {
+        "제안서 요약": "📋 제안서 요약",
+        "제안서 분석": "🔍 제안서 분석", 
+        "제안서 요약 및 분석 이력": "📂 이력 조회"
+    }
     
     # 페이지 변경 감지를 위한 임시 변수
     new_page = st.radio(
         "페이지 선택",
-        ["제안서 요약", "제안서 분석", "제안서 요약 및 분석 이력"],
-        index=["제안서 요약", "제안서 분석", "제안서 요약 및 분석 이력"].index(st.session_state['current_page']),
+        list(menu_items.keys()),
+        index=list(menu_items.keys()).index(st.session_state['current_page']),
+        format_func=lambda x: menu_items[x],
         label_visibility="collapsed"
     )
     
     st.markdown("---")
-    st.caption("v1.0.0 | NaraStore")
+    
+    # 캐시 정보 표시
+    try:
+        from backend.utils.cache import analysis_cache
+        cache_stats = analysis_cache.get_stats()
+        
+        with st.expander("💾 캐시 정보", expanded=False):
+            st.caption(f"저장된 분석: {cache_stats['count']}건")
+            st.caption(f"용량: {cache_stats['total_size_kb']} KB")
+            
+            if st.button("🗑️ 캐시 비우기", use_container_width=True):
+                cleared = analysis_cache.clear()
+                st.success(f"{cleared}개 삭제됨")
+                st.rerun()
+    except:
+        pass
+    
+    st.markdown("---")
+    st.caption("📦 v1.1.0")
+    st.caption("🚀 NaraStore")
 
 # 페이지 변경 시 경고 (분석 완료 후 또는 진행 중)
 if new_page != st.session_state['current_page']:
