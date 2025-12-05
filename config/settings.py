@@ -3,10 +3,12 @@
 환경변수 로드 및 기본값 설정
 """
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-# .env 파일 로드
-load_dotenv()
+# 프로젝트 루트 디렉토리에서 .env 파일 로드
+ROOT_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(ROOT_DIR / ".env")
 
 
 class Settings:

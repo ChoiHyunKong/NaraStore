@@ -38,8 +38,8 @@ def render():
                     st.write(f"- {file}")
             
             with col2:
-                # PDF 파일이 존재하는지 확인
-                pdf_path = item.get('pdf_path')
+                # PDF 파일 경로 확인 (상대 경로 지원)
+                pdf_path = history_manager.get_pdf_path(item)
                 if pdf_path and os.path.exists(pdf_path):
                     with open(pdf_path, "rb") as f:
                         pdf_bytes = f.read()
@@ -53,7 +53,7 @@ def render():
                         use_container_width=True
                     )
                 else:
-                    st.error("PDF 파일이 만료되었습니다.")
+                    st.error("PDF 파일을 찾을 수 없습니다.")
             
             with col3:
                 if st.button("🗑️ 삭제", key=f"delete_{item['id']}", use_container_width=True):

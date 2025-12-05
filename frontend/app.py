@@ -22,19 +22,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 전역 CSS 로드
+# 전역 CSS 로드 (캐싱 적용)
+@st.cache_data
 def load_css():
-    """CSS 파일 로드"""
-    css_files = ["common", "header", "sidebar", "content", "footer"]
-    for css_file in css_files:
-        try:
-            css_path = os.path.join(project_root, "frontend", "styles", f"{css_file}.css")
-            with open(css_path, encoding="utf-8") as f:
-                st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-        except FileNotFoundError:
-            pass
+    """통합 CSS 파일 로드 및 캐싱"""
+    css_path = os.path.join(project_root, "frontend", "styles", "main.css")
+    try:
+        with open(css_path, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        # 폴백: 개별 파일 로드
+        combined_css = ""
+        for css_file in ["common", "header", "sidebar", "content", "footer"]:
+            try:
+                fallback_path = os.path.join(project_root, "frontend", "styles", f"{css_file}.css")
+                with open(fallback_path, encoding="utf-8") as f:
+                    combined_css += f.read() + "\n"
+            except FileNotFoundError:
+                pass
+        return combined_css
 
-load_css()
+# CSS 적용
+st.markdown(f"<style>{load_css()}</style>", unsafe_allow_html=True)
 
 # 세션 초기화
 if 'current_page' not in st.session_state:
@@ -59,18 +68,25 @@ with st.sidebar:
     st.markdown("---")
     st.caption("v1.0.0 | NaraStore")
 
-# 페이지 변경 시 경고 (분석 중인 경우에만)
+# 페이지 변경 시 경고 (분석 완료 후 또는 진행 중)
 if new_page != st.session_state['current_page']:
-    if st.session_state.get('analysis_in_progress', False):
+    # 분석 진행 중이거나 방금 완료된 경우 경고 표시
+    show_warning = (
+        st.session_state.get('analysis_in_progress', False) or 
+        st.session_state.get('analysis_just_completed', False)
+    )
+    
+    if show_warning:
         st.warning("⚠️ 페이지 이동 시 진행된 내용은 사라지며 제안서 요약 및 분석 이력에서 볼 수 있습니다.")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("확인", use_container_width=True):
+            if st.button("확인", key="confirm_navigation", use_container_width=True):
                 st.session_state['current_page'] = new_page
                 st.session_state['analysis_in_progress'] = False
+                st.session_state['analysis_just_completed'] = False
                 st.rerun()
         with col2:
-            if st.button("취소", use_container_width=True):
+            if st.button("취소", key="cancel_navigation", use_container_width=True):
                 st.rerun()
     else:
         st.session_state['current_page'] = new_page

@@ -10,6 +10,7 @@ from backend.analyzer.parser.pptx_parser import pptx_parser
 from backend.analyzer.parser.text_cleaner import text_cleaner
 from backend.utils.file_handler import file_handler
 from backend.utils.logger import logger
+from backend.utils.error_handler import error_handler
 
 
 class DocumentIntegrator:
@@ -57,7 +58,15 @@ class DocumentIntegrator:
                 file_handler.delete_file(temp_path)
                 
                 if not success:
-                    return False, f"파일 파싱 실패: {uploaded_file.name} - {result}"
+                    error_msg = (
+                        f"파일 '{uploaded_file.name}' 파싱 실패\n\n"
+                        f"**원인**: {result}\n\n"
+                        f"**해결 방법**:\n"
+                        f"- 파일이 손상되지 않았는지 확인하세요\n"
+                        f"- 파일 형식이 표준 {ext.upper()} 형식인지 확인하세요\n"
+                        f"- 파일을 다른 형식으로 변환 후 재시도하세요"
+                    )
+                    return False, error_msg
                 
                 # 텍스트 추출
                 if isinstance(result, dict):
@@ -79,7 +88,7 @@ class DocumentIntegrator:
             
         except Exception as e:
             logger.error(f"문서 통합 중 오류: {str(e)}")
-            return False, f"문서 통합 실패: {str(e)}"
+            return error_handler.handle_general_error(e, "문서 통합")
 
 
 # 전역 인스턴스

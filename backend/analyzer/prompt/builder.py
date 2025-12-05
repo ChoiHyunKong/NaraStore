@@ -92,6 +92,23 @@ class PromptBuilder:
             "strategy_prompt",
             {"analysis_result": analysis_result}
         )
+    
+    @staticmethod
+    def build_reference_prompt(analysis_result: str) -> Optional[str]:
+        """
+        레퍼런스 추천 프롬프트 생성
+        
+        Args:
+            analysis_result: 분석 결과
+            
+        Returns:
+            레퍼런스 프롬프트
+        """
+        return PromptBuilder.build(
+            "references",
+            "reference_prompt",
+            {"analysis_result": analysis_result}
+        )
 
 
 # 전역 인스턴스

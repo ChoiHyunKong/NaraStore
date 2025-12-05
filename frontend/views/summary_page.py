@@ -44,19 +44,32 @@ def render():
         # 분석 시작 버튼
         st.markdown("---")
         
+        # 예상 소요 시간 안내
+        st.caption("⏱️ 예상 소요 시간: 1~2분 (문서 크기에 따라 달라질 수 있습니다)")
+        
         col1, col2 = st.columns([3, 1])
         with col1:
             if st.button("📊 요약 분석 시작", type="primary", use_container_width=True):
                 st.session_state['analysis_in_progress'] = True
                 
+                # 시간 측정 시작
+                import time
+                start_time = time.time()
+                
                 # 진행 상태 표시
                 progress_bar = st.progress(0)
                 status_text = st.empty()
+                time_text = st.empty()
+                
+                def update_time():
+                    elapsed = time.time() - start_time
+                    time_text.caption(f"⏱️ 경과 시간: {elapsed:.1f}초")
                 
                 try:
                     # 1. 문서 파싱
-                    status_text.text("문서 파싱 중...")
-                    progress_bar.progress(0.2)
+                    status_text.text("📄 문서 파싱 중...")
+                    progress_bar.progress(0.15)
+                    update_time()
                     
                     success, document_text = document_integrator.parse_multiple_files(uploaded_files)
                     
@@ -66,8 +79,9 @@ def render():
                         return
                     
                     # 2. Gemini API 분석
-                    status_text.text("AI 분석 중...")
-                    progress_bar.progress(0.5)
+                    status_text.text("🤖 AI 분석 중... (가장 오래 걸리는 단계)")
+                    progress_bar.progress(0.3)
+                    update_time()
                     
                     analyzer = create_analyzer(settings.GEMINI_API_KEY)
                     success, summary_data = analyzer.summarize(document_text)
@@ -78,12 +92,18 @@ def render():
                         return
                     
                     # 3. PDF 생성
-                    status_text.text("PDF 레포트 생성 중...")
-                    progress_bar.progress(0.8)
+                    status_text.text("📑 PDF 레포트 생성 중...")
+                    progress_bar.progress(0.85)
+                    update_time()
                     
-                    # 임시 PDF 파일 생성
+                    # PDF 저장 디렉토리 확인 및 생성
+                    pdf_dir = os.path.join(os.getcwd(), "data", "pdfs")
+                    if not os.path.exists(pdf_dir):
+                        os.makedirs(pdf_dir)
+                    
+                    # 영구 PDF 파일 생성
                     output_path = os.path.join(
-                        tempfile.gettempdir(),
+                        pdf_dir,
                         f"summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                     )
                     
@@ -96,24 +116,244 @@ def render():
                     
                     # 완료
                     progress_bar.progress(1.0)
-                    status_text.text("완료!")
-                    st.success("분석 완료!")
+                    total_time = time.time() - start_time
+                    status_text.text("✅ 완료!")
+                    time_text.caption(f"✅ 총 소요 시간: {total_time:.1f}초")
+                    st.success(f"분석 완료! (소요 시간: {total_time:.1f}초)")
                     
-                    # 결과 표시
-                    st.markdown("### 📋 분석 결과")
+                    # 결과 표시 - 레포트 형식
+                    st.markdown("---")
                     
+                    # 프로젝트 제목
+                    if "project_title" in summary_data:
+                        st.markdown(f"## 📋 {summary_data['project_title']}")
+                    else:
+                        st.markdown("## 📋 제안요청서 분석 결과")
+                    
+                    # 프로젝트 개요
                     if "project_overview" in summary_data:
-                        st.markdown("**프로젝트 개요**")
+                        st.markdown("### 📌 프로젝트 개요")
                         st.write(summary_data["project_overview"])
                     
-                    if "project_goal" in summary_data:
-                        st.markdown("**목표 및 목적**")
-                        st.write(summary_data["project_goal"])
+                    # 배경 및 필요성
+                    if "background" in summary_data:
+                        st.markdown("### 📍 배경 및 필요성")
+                        bg = summary_data["background"]
+                        if isinstance(bg, dict):
+                            if "current_issues" in bg:
+                                st.markdown("**현재 문제점:**")
+                                st.write(bg["current_issues"])
+                            if "necessity" in bg:
+                                st.markdown("**필요성:**")
+                                st.write(bg["necessity"])
+                        else:
+                            st.write(bg)
                     
-                    if "main_tasks" in summary_data and summary_data["main_tasks"]:
-                        st.markdown("**주요 과업**")
-                        for task in summary_data["main_tasks"]:
-                            st.write(f"- {task}")
+                    # 목표
+                    col_goal1, col_goal2 = st.columns([1, 1])
+                    with col_goal1:
+                        if "project_goal" in summary_data:
+                            st.markdown("### 🎯 프로젝트 목표")
+                            goal = summary_data["project_goal"]
+                            if isinstance(goal, dict):
+                                if "main_goal" in goal:
+                                    st.info(f"**핵심 목표:** {goal['main_goal']}")
+                                if "sub_goals" in goal:
+                                    st.markdown("**세부 목표:**")
+                                    for sg in goal["sub_goals"]:
+                                        st.write(f"• {sg}")
+                            else:
+                                st.write(goal)
+                    
+                    with col_goal2:
+                        if "scope" in summary_data:
+                            st.markdown("### 📐 사업 범위")
+                            scope = summary_data["scope"]
+                            if isinstance(scope, dict):
+                                if "target_users" in scope:
+                                    st.markdown(f"**대상:** {scope['target_users']}")
+                                if "coverage" in scope:
+                                    st.markdown(f"**범위:** {scope['coverage']}")
+                                if "exclusions" in scope and scope["exclusions"] != "정보 없음":
+                                    st.markdown(f"**제외 사항:** {scope['exclusions']}")
+                    
+                    # 주요 과업
+                    if "main_tasks" in summary_data:
+                        st.markdown("### 📝 주요 과업")
+                        tasks = summary_data["main_tasks"]
+                        if isinstance(tasks, list):
+                            for idx, task in enumerate(tasks, 1):
+                                if isinstance(task, dict):
+                                    with st.expander(f"**{idx}. {task.get('task_name', f'과업 {idx}')}**", expanded=True):
+                                        if "description" in task:
+                                            st.write(task["description"])
+                                        if "deliverables" in task and task["deliverables"]:
+                                            st.markdown("**📦 산출물:**")
+                                            for d in task["deliverables"]:
+                                                st.write(f"  • {d}")
+                                else:
+                                    st.write(f"• {task}")
+                    
+                    # 💰 예산 및 📅 일정 (핵심 정보 - 눈에 띄게)
+                    st.markdown("---")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        if "budget" in summary_data:
+                            st.markdown("### 💰 예산 정보")
+                            budget = summary_data["budget"]
+                            if isinstance(budget, dict):
+                                if "total_amount" in budget and budget["total_amount"] != "정보 없음":
+                                    st.metric("💵 총 사업비", budget["total_amount"])
+                                if "vat_included" in budget and budget["vat_included"] != "미명시":
+                                    st.write(f"📌 부가세: **{budget['vat_included']}**")
+                                if "budget_type" in budget and budget["budget_type"] != "정보 없음":
+                                    st.write(f"📌 예산 유형: {budget['budget_type']}")
+                                if "breakdown" in budget and budget["breakdown"] != "정보 없음":
+                                    st.write(f"📌 세부 내역: {budget['breakdown']}")
+                            else:
+                                st.metric("💵 총 사업비", str(budget))
+                    
+                    with col2:
+                        if "schedule" in summary_data:
+                            st.markdown("### 📅 사업 일정")
+                            sch = summary_data["schedule"]
+                            if isinstance(sch, dict):
+                                if "total_period" in sch and sch["total_period"] != "정보 없음":
+                                    st.metric("⏱️ 총 사업 기간", sch["total_period"])
+                                if "proposal_deadline" in sch and sch["proposal_deadline"] != "정보 없음":
+                                    st.error(f"🚨 제안서 마감: **{sch['proposal_deadline']}**")
+                                if "start_date" in sch and sch["start_date"] != "정보 없음":
+                                    st.write(f"📌 착수일: {sch['start_date']}")
+                                if "end_date" in sch and sch["end_date"] != "정보 없음":
+                                    st.write(f"📌 완료일: {sch['end_date']}")
+                                if "presentation_date" in sch and sch["presentation_date"] != "정보 없음":
+                                    st.write(f"📌 PT 예정: {sch['presentation_date']}")
+                    
+                    # 👥 상주 인력 정보 (핵심!)
+                    if "personnel" in summary_data:
+                        st.markdown("---")
+                        st.markdown("### 👥 인력 요구사항")
+                        pers = summary_data["personnel"]
+                        if isinstance(pers, dict):
+                            col_p1, col_p2 = st.columns(2)
+                            
+                            with col_p1:
+                                # 상주 인력 여부 (중요 정보)
+                                onsite = pers.get("onsite_required", "정보 없음")
+                                if onsite in ["필요", "필수", "있음", "Y"]:
+                                    st.error(f"🏢 **상주 인력: 필요**")
+                                    if "onsite_count" in pers and pers["onsite_count"] != "정보 없음":
+                                        st.write(f"  • 인원: {pers['onsite_count']}")
+                                    if "onsite_location" in pers and pers["onsite_location"] != "정보 없음":
+                                        st.write(f"  • 장소: {pers['onsite_location']}")
+                                elif onsite in ["불필요", "없음", "N"]:
+                                    st.success("🏠 **상주 인력: 불필요**")
+                                else:
+                                    st.info(f"🏢 상주 인력: {onsite}")
+                                
+                                # PM 필수 여부
+                                if "pm_required" in pers and pers["pm_required"] != "정보 없음":
+                                    st.write(f"📌 PM 필수: {pers['pm_required']}")
+                            
+                            with col_p2:
+                                if "key_personnel" in pers and pers["key_personnel"]:
+                                    st.markdown("**필수 투입 인력:**")
+                                    for role in pers["key_personnel"]:
+                                        if role != "정보 없음":
+                                            st.write(f"  • {role}")
+                                
+                                if "qualification_requirements" in pers and pers["qualification_requirements"]:
+                                    st.markdown("**인력 자격 요건:**")
+                                    for qual in pers["qualification_requirements"]:
+                                        if qual != "정보 없음":
+                                            st.write(f"  • {qual}")
+                    
+                    # 계약 정보
+                    if "contract_info" in summary_data:
+                        st.markdown("---")
+                        st.markdown("### � 계약 정보")
+                        contract = summary_data["contract_info"]
+                        if isinstance(contract, dict):
+                            cols = st.columns(3)
+                            with cols[0]:
+                                if "contract_type" in contract and contract["contract_type"] != "정보 없음":
+                                    st.write(f"**계약 방식:** {contract['contract_type']}")
+                            with cols[1]:
+                                if "payment_terms" in contract and contract["payment_terms"] != "정보 없음":
+                                    st.write(f"**지급 조건:** {contract['payment_terms']}")
+                            with cols[2]:
+                                if "warranty_period" in contract and contract["warranty_period"] != "정보 없음":
+                                    st.write(f"**하자보수:** {contract['warranty_period']}")
+                    
+                    # 기술 요구사항
+                    if "technical_requirements" in summary_data:
+                        st.markdown("### ⚙️ 기술 요구사항")
+                        for req in summary_data["technical_requirements"]:
+                            st.write(f"• {req}")
+                    
+                    # 자격 요건
+                    if "qualification" in summary_data:
+                        st.markdown("### ✅ 참여 자격 요건")
+                        qual = summary_data["qualification"]
+                        if isinstance(qual, dict):
+                            col_q1, col_q2 = st.columns(2)
+                            with col_q1:
+                                if "mandatory" in qual and qual["mandatory"]:
+                                    st.markdown("**필수 요건:**")
+                                    for m in qual["mandatory"]:
+                                        st.write(f"• {m}")
+                            with col_q2:
+                                if "preferred" in qual and qual["preferred"]:
+                                    st.markdown("**우대 사항:**")
+                                    for p in qual["preferred"]:
+                                        st.write(f"• {p}")
+                    
+                    # 평가 기준
+                    if "evaluation_criteria" in summary_data and summary_data["evaluation_criteria"]:
+                        st.markdown("### 📊 평가 기준")
+                        criteria = summary_data["evaluation_criteria"]
+                        if isinstance(criteria, list) and criteria:
+                            criteria_data = []
+                            for c in criteria:
+                                if isinstance(c, dict):
+                                    criteria_data.append({
+                                        "평가 항목": c.get("criteria", ""),
+                                        "배점": c.get("weight", "")
+                                    })
+                            if criteria_data:
+                                import pandas as pd
+                                st.table(pd.DataFrame(criteria_data))
+                    
+                    # 기대 효과
+                    if "expected_effects" in summary_data and summary_data["expected_effects"]:
+                        st.markdown("### 🌟 기대 효과")
+                        for effect in summary_data["expected_effects"]:
+                            st.success(f"✓ {effect}")
+                    
+                    # 핵심 고려사항
+                    if "key_considerations" in summary_data and summary_data["key_considerations"]:
+                        st.markdown("### ⚠️ 입찰 시 핵심 고려사항")
+                        for item in summary_data["key_considerations"]:
+                            st.warning(f"💡 {item}")
+                    
+                    # 제출 정보
+                    if "submission_info" in summary_data:
+                        st.markdown("### 📬 제출 정보")
+                        sub = summary_data["submission_info"]
+                        if isinstance(sub, dict):
+                            cols = st.columns(3)
+                            with cols[0]:
+                                if "deadline" in sub:
+                                    st.markdown(f"**마감:** {sub['deadline']}")
+                            with cols[1]:
+                                if "method" in sub:
+                                    st.markdown(f"**방법:** {sub['method']}")
+                            with cols[2]:
+                                if "contact" in sub:
+                                    st.markdown(f"**문의:** {sub['contact']}")
+                    
+                    st.markdown("---")
                     
                     # PDF 다운로드
                     with open(output_path, "rb") as f:
@@ -136,11 +376,14 @@ def render():
                         pdf_path=output_path
                     )
                     
+                    # 분석 완료 플래그 설정 (페이지 이동 경고용)
                     st.session_state['analysis_in_progress'] = False
+                    st.session_state['analysis_just_completed'] = True
                     
                 except Exception as e:
                     st.error(f"오류 발생: {str(e)}")
                     st.session_state['analysis_in_progress'] = False
+                    st.session_state['analysis_just_completed'] = False
         
         with col2:
             if st.button("🔍 제안서 분석", use_container_width=True):

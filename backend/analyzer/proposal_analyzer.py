@@ -111,8 +111,11 @@ class ProposalAnalyzer:
         try:
             logger.info("수주 전략 생성 시작")
             
-            # 분석 결과를 문자열로 변환
-            analysis_text = json.dumps(analysis_result, ensure_ascii=False, indent=2)
+            # 분석 결과를 문자열로 변환 (문자열이면 그대로 사용)
+            if isinstance(analysis_result, str):
+                analysis_text = analysis_result
+            else:
+                analysis_text = json.dumps(analysis_result, ensure_ascii=False, indent=2)
             
             # 전략 프롬프트 생성
             prompt = prompt_builder.build_strategy_prompt(analysis_text)
@@ -146,8 +149,11 @@ class ProposalAnalyzer:
         try:
             logger.info("유사 프로젝트 레퍼런스 생성 시작")
             
-            # 분석 결과를 문자열로 변환
-            analysis_text = json.dumps(analysis_result, ensure_ascii=False, indent=2)
+            # 분석 결과를 문자열로 변환 (문자열이면 그대로 사용)
+            if isinstance(analysis_result, str):
+                analysis_text = analysis_result
+            else:
+                analysis_text = json.dumps(analysis_result, ensure_ascii=False, indent=2)
             
             # 레퍼런스 프롬프트 생성
             prompt = prompt_builder.build_reference_prompt(analysis_text)
@@ -177,22 +183,115 @@ class ProposalAnalyzer:
     def _build_summary_prompt(self, document_text: str) -> str:
         """요약용 프롬프트 생성"""
         prompt = f"""
-다음 제안요청서(RFP)를 분석하여 핵심 정보를 JSON 형식으로 추출해주세요.
+당신은 전문 제안서 분석가입니다. 다음 제안요청서(RFP)를 상세히 분석하여 핵심 정보를 JSON 형식으로 추출해주세요.
+각 항목을 가능한 상세하게 작성해주세요. 특히 예산, 일정, 인력 정보는 정확하게 추출해주세요.
 
+[제안요청서 내용]
 {document_text}
 
 다음 정보를 추출하여 JSON으로 반환해주세요:
 {{
-    "project_overview": "프로젝트 개요 (2-3문장)",
-    "project_goal": "프로젝트 목표 및 목적",
-    "background": "왜 이 프로젝트를 수행하는지 (배경 및 필요성)",
-    "main_tasks": ["주요 과업 1", "주요 과업 2", ...],
-    "budget": "프로젝트 금액 (명시되어 있다면)",
-    "deadline": "마감 날짜 (명시되어 있다면)",
-    "key_requirements": ["핵심 요구사항 1", "핵심 요구사항 2", ...]
+    "project_title": "프로젝트 정식 명칭 (사업명)",
+    "project_overview": "프로젝트 개요를 4-5문장으로 상세히 설명. 어떤 시스템/서비스를 구축하는지, 주요 특징은 무엇인지 설명",
+    
+    "client_info": {{
+        "organization": "발주 기관명",
+        "department": "담당 부서",
+        "contact": "담당자 연락처"
+    }},
+    
+    "background": {{
+        "current_issues": "현재 문제점 또는 개선 필요성을 2-3가지 구체적으로 설명",
+        "necessity": "이 프로젝트가 필요한 이유를 2-3문장으로 설명"
+    }},
+    
+    "project_goal": {{
+        "main_goal": "프로젝트의 핵심 목표를 1-2문장으로 명확하게",
+        "sub_goals": ["세부 목표 1", "세부 목표 2", "세부 목표 3"]
+    }},
+    
+    "scope": {{
+        "target_users": "서비스 대상자/이용자 설명",
+        "coverage": "서비스 범위 또는 적용 범위",
+        "exclusions": "과업 범위에서 제외되는 사항 (있다면)"
+    }},
+    
+    "budget": {{
+        "total_amount": "총 사업비 금액 (원 단위로 정확히, 예: 150,000,000원)",
+        "vat_included": "부가세 포함 여부 (포함/별도/미명시)",
+        "budget_type": "예산 유형 (정액/추정가격 등)",
+        "breakdown": "예산 세부 내역이 있다면 기재 (인건비, 직접경비 등)"
+    }},
+    
+    "schedule": {{
+        "total_period": "총 사업 기간 (정확히, 예: 100일, 6개월 등)",
+        "start_date": "착수 예정일 또는 계약 시작일",
+        "end_date": "완료 예정일 또는 계약 종료일",
+        "proposal_deadline": "제안서 제출 마감일시",
+        "presentation_date": "제안설명회/PT 예정일 (있다면)",
+        "key_milestones": ["착수보고", "중간보고", "최종보고 등 주요 일정"]
+    }},
+    
+    "personnel": {{
+        "onsite_required": "상주 인력 필요 여부 (필요/불필요/협의)",
+        "onsite_count": "상주 인력 수 (명시된 경우)",
+        "onsite_location": "상주 장소 (명시된 경우)",
+        "pm_required": "PM(프로젝트 관리자) 필수 여부",
+        "key_personnel": ["필수 투입 인력 역할 (PM, PL, 개발자 등)"],
+        "qualification_requirements": ["투입 인력 자격 요건 (경력, 자격증 등)"]
+    }},
+    
+    "main_tasks": [
+        {{
+            "task_name": "주요 과업 1",
+            "description": "과업에 대한 2-3줄 설명",
+            "deliverables": ["산출물 1", "산출물 2"]
+        }}
+    ],
+    
+    "technical_requirements": [
+        "기술 요구사항 (개발 언어, 프레임워크, 플랫폼 등)"
+    ],
+    
+    "qualification": {{
+        "mandatory": ["필수 자격 요건 (등록증, 인증 등)"],
+        "preferred": ["우대 사항"],
+        "restrictions": ["참여 제한 사항 (있다면)"]
+    }},
+    
+    "evaluation_criteria": [
+        {{"criteria": "평가 항목", "weight": "배점"}},
+        {{"criteria": "기술 능력", "weight": "00점"}},
+        {{"criteria": "수행 실적", "weight": "00점"}}
+    ],
+    
+    "contract_info": {{
+        "contract_type": "계약 방식 (일반경쟁/제한경쟁/협상에 의한 계약 등)",
+        "payment_terms": "대금 지급 조건 (선급금, 중도금, 잔금 비율)",
+        "warranty_period": "하자보수 기간"
+    }},
+    
+    "expected_effects": [
+        "기대 효과 1",
+        "기대 효과 2"
+    ],
+    
+    "key_considerations": [
+        "입찰 시 반드시 확인해야 할 핵심 사항",
+        "주의 사항"
+    ],
+    
+    "attachments": [
+        "첨부된 서식 또는 문서 목록 (있다면)"
+    ]
 }}
 
-응답은 반드시 유효한 JSON 형식이어야 합니다.
+[중요 지침]
+1. 예산 금액은 문서에 명시된 정확한 금액을 추출하세요. 추정하지 마세요.
+2. 상주 인력, PM 필수 여부 등 인력 관련 정보를 주의 깊게 확인하세요.
+3. 일정은 문서에 명시된 날짜를 정확히 추출하세요.
+4. 정보가 명시되지 않은 경우 "정보 없음" 또는 "미명시"로 표시하세요.
+5. 응답은 반드시 유효한 JSON 형식이어야 합니다.
 """
         return prompt
 

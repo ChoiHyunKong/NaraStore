@@ -71,6 +71,33 @@ class SummaryReportGenerator:
     """제안서 요약 레포트 생성기"""
     
     @staticmethod
+    def _dict_to_text(data, indent=0) -> str:
+        """딕셔너리를 읽기 쉬운 텍스트로 변환"""
+        if isinstance(data, str):
+            return data
+        elif isinstance(data, dict):
+            lines = []
+            for key, value in data.items():
+                key_name = key.replace("_", " ").title()
+                if isinstance(value, str):
+                    lines.append(f"{'  ' * indent}• {key_name}: {value}")
+                elif isinstance(value, list):
+                    lines.append(f"{'  ' * indent}• {key_name}:")
+                    for item in value:
+                        if isinstance(item, dict):
+                            lines.append(SummaryReportGenerator._dict_to_text(item, indent+1))
+                        else:
+                            lines.append(f"{'  ' * (indent+1)}- {item}")
+                elif isinstance(value, dict):
+                    lines.append(f"{'  ' * indent}• {key_name}:")
+                    lines.append(SummaryReportGenerator._dict_to_text(value, indent+1))
+            return "\n".join(lines)
+        elif isinstance(data, list):
+            return "\n".join([f"- {item}" if isinstance(item, str) else SummaryReportGenerator._dict_to_text(item, indent) for item in data])
+        else:
+            return str(data)
+    
+    @staticmethod
     def generate(summary_data: Dict, output_path: str) -> tuple[bool, str]:
         """
         요약 레포트 PDF 생성
@@ -93,43 +120,91 @@ class SummaryReportGenerator:
             pdf.cell(0, 6, f'생성일시: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
             pdf.ln(5)
             
+            section_num = 1
+            
+            # 프로젝트 제목
+            if "project_title" in summary_data:
+                pdf.set_font(pdf.font_family, 'B', 14)
+                pdf.multi_cell(0, 8, summary_data["project_title"])
+                pdf.ln(5)
+            
             # 프로젝트 개요
             if "project_overview" in summary_data:
-                pdf.chapter_title("1. 프로젝트 개요")
-                pdf.chapter_body(summary_data["project_overview"])
-            
-            # 프로젝트 목표 및 목적
-            if "project_goal" in summary_data:
-                pdf.chapter_title("2. 프로젝트 목표 및 목적")
-                pdf.chapter_body(summary_data["project_goal"])
+                pdf.chapter_title(f"{section_num}. 프로젝트 개요")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["project_overview"]))
+                section_num += 1
             
             # 배경 및 필요성
             if "background" in summary_data:
-                pdf.chapter_title("3. 프로젝트 배경 및 필요성")
-                pdf.chapter_body(summary_data["background"])
+                pdf.chapter_title(f"{section_num}. 배경 및 필요성")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["background"]))
+                section_num += 1
+            
+            # 프로젝트 목표
+            if "project_goal" in summary_data:
+                pdf.chapter_title(f"{section_num}. 프로젝트 목표")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["project_goal"]))
+                section_num += 1
+            
+            # 예산 정보
+            if "budget" in summary_data:
+                pdf.chapter_title(f"{section_num}. 예산 정보")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["budget"]))
+                section_num += 1
+            
+            # 사업 일정
+            if "schedule" in summary_data:
+                pdf.chapter_title(f"{section_num}. 사업 일정")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["schedule"]))
+                section_num += 1
+            
+            # 인력 요구사항
+            if "personnel" in summary_data:
+                pdf.chapter_title(f"{section_num}. 인력 요구사항")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["personnel"]))
+                section_num += 1
             
             # 주요 과업
             if "main_tasks" in summary_data and summary_data["main_tasks"]:
-                pdf.chapter_title("4. 주요 과업 내용")
-                tasks_text = "\n".join([f"- {task}" for task in summary_data["main_tasks"]])
-                pdf.chapter_body(tasks_text)
+                pdf.chapter_title(f"{section_num}. 주요 과업")
+                tasks = summary_data["main_tasks"]
+                if isinstance(tasks, list):
+                    for idx, task in enumerate(tasks, 1):
+                        if isinstance(task, dict):
+                            task_name = task.get("task_name", f"과업 {idx}")
+                            pdf.set_font(pdf.font_family, 'B', 10)
+                            pdf.cell(0, 6, f"  {idx}. {task_name}", 0, 1)
+                            pdf.set_font(pdf.font_family, '', 10)
+                            if "description" in task:
+                                pdf.multi_cell(0, 5, f"     {task['description']}")
+                        else:
+                            pdf.chapter_body(f"- {task}")
+                    pdf.ln()
+                section_num += 1
             
-            # 금액 및 마감일
-            budget_deadline = []
-            if "budget" in summary_data and summary_data["budget"]:
-                budget_deadline.append(f"예산: {summary_data['budget']}")
-            if "deadline" in summary_data and summary_data["deadline"]:
-                budget_deadline.append(f"마감일: {summary_data['deadline']}")
+            # 기술 요구사항
+            if "technical_requirements" in summary_data:
+                pdf.chapter_title(f"{section_num}. 기술 요구사항")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["technical_requirements"]))
+                section_num += 1
             
-            if budget_deadline:
-                pdf.chapter_title("5. 프로젝트 정보")
-                pdf.chapter_body("\n".join(budget_deadline))
+            # 참여 자격
+            if "qualification" in summary_data:
+                pdf.chapter_title(f"{section_num}. 참여 자격")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["qualification"]))
+                section_num += 1
             
-            # 핵심 요구사항
-            if "key_requirements" in summary_data and summary_data["key_requirements"]:
-                pdf.chapter_title("6. 핵심 요구사항")
-                reqs_text = "\n".join([f"- {req}" for req in summary_data["key_requirements"]])
-                pdf.chapter_body(reqs_text)
+            # 계약 정보
+            if "contract_info" in summary_data:
+                pdf.chapter_title(f"{section_num}. 계약 정보")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["contract_info"]))
+                section_num += 1
+            
+            # 핵심 고려사항
+            if "key_considerations" in summary_data:
+                pdf.chapter_title(f"{section_num}. 핵심 고려사항")
+                pdf.chapter_body(SummaryReportGenerator._dict_to_text(summary_data["key_considerations"]))
+                section_num += 1
             
             # PDF 저장
             pdf.output(output_path)
