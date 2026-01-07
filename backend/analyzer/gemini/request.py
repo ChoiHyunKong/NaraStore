@@ -22,13 +22,14 @@ class GeminiRequest:
         """
         self.client = client
     
-    def send(self, prompt: str, retry_count: int = 0) -> tuple[bool, str | Dict]:
+    def send(self, prompt: str, retry_count: int = 0, generation_config: Optional[Dict] = None) -> tuple[bool, str | Dict]:
         """
         API 요청 전송
         
         Args:
             prompt: 전송할 프롬프트
             retry_count: 재시도 횟수
+            generation_config: 생성 설정 (JSON 모드 등)
             
         Returns:
             (성공 여부, 응답 텍스트 또는 에러 메시지)
@@ -41,7 +42,10 @@ class GeminiRequest:
                 return False, "Gemini API가 초기화되지 않았습니다."
             
             # 요청 전송
-            response = self.client.model.generate_content(prompt)
+            if generation_config:
+                response = self.client.model.generate_content(prompt, generation_config=generation_config)
+            else:
+                response = self.client.model.generate_content(prompt)
             
             # 응답 확인
             if not response or not response.text:
@@ -58,7 +62,7 @@ class GeminiRequest:
             if retry_count < gemini_config.MAX_RETRIES:
                 logger.info(f"{gemini_config.RETRY_DELAY}초 후 재시도...")
                 time.sleep(gemini_config.RETRY_DELAY)
-                return self.send(prompt, retry_count + 1)
+                return self.send(prompt, retry_count + 1, generation_config)
             
             return error_handler.handle_api_error(e)
     
