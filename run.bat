@@ -34,14 +34,14 @@ echo [4/4] 서버 시작 중...
 echo.
 echo ----------------------------------------
 echo   백엔드 API: http://localhost:8000
-echo   프론트엔드:  http://localhost:5173
+echo   프론트엔드:  http://localhost:3000
 echo ----------------------------------------
 echo.
 echo   ※ 종료하려면 Ctrl+C를 누르세요
 echo.
 
 :: 백엔드 실행 (백그라운드)
-start /B cmd /c "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000"
+start /B cmd /c "python backend/main.py"
 
 :: 잠시 대기 후 프론트엔드 실행
 timeout /t 2 /nobreak >nul

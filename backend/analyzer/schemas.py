@@ -12,10 +12,14 @@ class StrategyConfig(BaseModel):
     win_strategy: List[str] = Field(description="분석 내용을 기반으로 한 수주 전략 및 제언")
     references: List[str] = Field(description="유사 사업 수행 경험 또는 참고할 만한 레퍼런스 제안")
 
+class RequirementCategory(BaseModel):
+    category: str = Field(description="요구사항 카테고리 명칭 (예: '기능 요구사항', '보안 요구사항' 등 RFP 목차 그대로)")
+    items: List[str] = Field(description="해당 카테고리의 상세 요구사항 목록")
+
 class AnalysisResult(BaseModel):
     summary: AnalysisSummary
-    requirements: Dict[str, List[str]] = Field(
-        description="제안서의 요구사항 목차 또는 헤더(예: '기능 요구사항', '보안 요구사항' 등)를 Key로 하고, 해당 항목의 상세 요구사항 목록을 Value로 갖는 딕셔너리. RFP에 있는 카테고리를 그대로 키로 사용해야 함."
+    requirements: List[RequirementCategory] = Field(
+        description="제안서의 요구사항을 카테고리별로 분류한 리스트"
     )
     strategy: StrategyConfig
     todo_list: List[str] = Field(description="이 제안 작업을 완료하기 위해 수행해야 할 구체적인 할 일 목록 (8개 내외)")

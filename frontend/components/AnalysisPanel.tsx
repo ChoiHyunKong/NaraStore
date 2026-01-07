@@ -4,8 +4,6 @@ import { RFP, TabType } from '../types';
 import SummaryCard from './report/SummaryCard';
 import RequirementBreakdown from './report/RequirementBreakdown';
 import StrategyView from './report/StrategyView';
-import FullReportTemplate from './report/FullReportTemplate';
-import { generatePDF } from '../services/pdfService';
 
 interface AnalysisPanelProps {
   currentRFP: RFP | null;
@@ -26,10 +24,11 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
   };
 
   const triggerUpload = () => {
-    if (!apiKeySet) {
-      alert('먼저 설정에서 API Key를 입력해주세요.');
-      return;
-    }
+    // [MOCK MODE] API Key 체크 제거
+    // if (!apiKeySet) {
+    //   alert('먼저 설정에서 API Key를 입력해주세요.');
+    //   return;
+    // }
     fileInputRef.current?.click();
   };
 
@@ -44,13 +43,34 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
 
     try {
       setIsGeneratingPdf(true);
-      // 잠시 대기하여 렌더링 확보 (hidden element라도)
-      await new Promise(resolve => setTimeout(resolve, 100));
 
-      await generatePDF('full-report-template', `${currentRFP.title}_분석리포트`);
+      const response = await fetch('http://localhost:8000/api/report/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          analysis_data: currentRFP.structuredAnalysis
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('PDF generation failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentRFP.title}_분석리포트.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
     } catch (error) {
       console.error('PDF Download Error:', error);
-      alert('PDF 생성 중 오류가 발생했습니다.');
+      alert('PDF 생성 중 오류가 발생했습니다. (백엔드 연결 확인 필요)');
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -201,10 +221,6 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
         )}
       </div>
 
-      {/* Hidden Full Report Template for PDF Generation */}
-      {currentRFP && (
-        <FullReportTemplate rfp={currentRFP} id="full-report-template" />
-      )}
     </div>
   );
 };

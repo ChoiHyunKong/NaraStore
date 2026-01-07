@@ -43,20 +43,27 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // API Key가 없으면 설정 모달 자동 표시
+  // API Key가 없으면 설정 모달 자동 표시 (Mock Mode를 위해 제거)
+  /*
   useEffect(() => {
     if (!apiKey) {
       setShowSettings(true);
     }
   }, []);
+  */
 
   const handleFileUpload = async (file: File) => {
-    // API Key 체크
+    // [MOCK MODE] API Key가 없으면 더미 키 사용
+    const effectiveApiKey = apiKey || "MOCK_KEY_FOR_TESTING";
+
+    /*
+    // API Key 체크 (Mock Mode를 위해 주석 처리)
     if (!apiKey) {
       setApiKeyError('API Key를 먼저 입력해주세요.');
       setShowSettings(true);
       return;
     }
+    */
 
     setIsAnalyzing(true);
     setApiKeyError('');
@@ -80,7 +87,7 @@ const App: React.FC = () => {
       setSelectedRFP(tempRFP);
 
       // 2. Call Backend API
-      const result = await analyzeRFP(file, apiKey);
+      const result = await analyzeRFP(file, effectiveApiKey);
 
       // 3. Update Firestore with Result
       // 3. Update Firestore with Result
@@ -126,10 +133,11 @@ const App: React.FC = () => {
   };
 
   const handleSaveApiKey = () => {
-    if (!apiKey.trim()) {
-      setApiKeyError('API Key를 입력해주세요.');
-      return;
-    }
+    // [MOCK MODE] Key가 없어도 저장 허용
+    // if (!apiKey.trim()) {
+    //   setApiKeyError('API Key를 입력해주세요.');
+    //   return;
+    // }
     setApiKeyError('');
     setShowSettings(false);
   };
@@ -160,11 +168,9 @@ const App: React.FC = () => {
                 <Settings className="w-5 h-5 text-indigo-600" />
                 <h3 className="text-lg font-bold text-gray-800">Gemini API 설정</h3>
               </div>
-              {apiKey && (
-                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              )}
+              <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
             </div>
 
             <div className="p-6 space-y-6">
@@ -217,10 +223,10 @@ const App: React.FC = () => {
 
               <button
                 onClick={handleSaveApiKey}
-                disabled={!apiKey.trim()}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]"
+                // disabled={!apiKey.trim()} // Mock Mode 허용
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-[0.98]"
               >
-                {apiKey ? '설정 저장하기' : 'API Key를 입력해주세요'}
+                {apiKey ? '설정 저장하기' : 'API Key 없이 시작하기 (Mock Mode)'}
               </button>
             </div>
           </div>

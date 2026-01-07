@@ -58,6 +58,10 @@ class GeminiRequest:
             error_msg = str(e)
             logger.error(f"Gemini API 요청 실패: {error_msg}")
             
+            # API 키 관련 에러인지 확인
+            if "API key" in error_msg or "400" in error_msg:
+                 return False, f"API 키 오류 또는 잘못된 요청입니다. ({error_msg})"
+            
             # 재시도 로직
             if retry_count < gemini_config.MAX_RETRIES:
                 logger.info(f"{gemini_config.RETRY_DELAY}초 후 재시도...")

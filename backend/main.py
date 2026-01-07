@@ -155,8 +155,9 @@ async def analyze_rfp_upload(
     api_key: str = Form(...)
 ):
     """파일 직접 업로드 방식"""
-    if not api_key:
-        raise HTTPException(status_code=400, detail="API Key가 필요합니다")
+    # [MOCK MODE] API Key 체크 완화
+    # if not api_key:
+    #     raise HTTPException(status_code=400, detail="API Key가 필요합니다")
     
     try:
         file_content = await file.read()
@@ -173,6 +174,48 @@ async def analyze_rfp_upload(
     except Exception as e:
         return AnalysisResponse(success=False, error=f"업로드 오류: {str(e)}")
 
+class PDFRequest(BaseModel):
+    analysis_data: Dict[str, Any]
+
+@app.post("/api/report/download")
+async def download_report(request: PDFRequest):
+    """
+    PDF 리포트 다운로드 (백엔드 생성)
+    구조화된 분석 데이터를 받아 PDF 파일 생성 후 반환
+    """
+    try:
+        from backend.report.generator.report_writer import FullReportGenerator
+        from fastapi.responses import FileResponse
+        
+        # 파일명 생성
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"NaraStore_Analysis_{timestamp}.pdf"
+        
+        # 출력 경로 설정
+        output_dir = os.path.join(project_root, "data", "pdfs")
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, filename)
+        
+        # PDF 생성
+        success, msg = FullReportGenerator.generate(request.analysis_data, output_path)
+        
+        if not success:
+            return JSONResponse(status_code=500, content={"error": f"PDF 생성 실패: {msg}"})
+        
+        # 파일 반환
+        return FileResponse(
+            path=output_path,
+            filename=filename,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+            
+    except Exception as e:
+        logger.error(f"PDF 다운로드 오류: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

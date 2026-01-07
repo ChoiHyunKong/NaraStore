@@ -12,9 +12,14 @@ export interface StrategyConfig {
   references: string[];
 }
 
+export interface RequirementCategory {
+  category: string;
+  items: string[];
+}
+
 export interface AnalysisResultData {
   summary: AnalysisSummary;
-  requirements: Record<string, string[]>; // 동적 키 (예: "기능 요구사항": [...])
+  requirements: RequirementCategory[]; // 리스트 형태로 변경
   strategy: StrategyConfig;
   todo_list: string[];
 }

@@ -43,6 +43,8 @@ class GeminiClient:
             
         except Exception as e:
             logger.error(f"Gemini API 초기화 실패: {str(e)}")
+            if "API key not valid" in str(e) or "400" in str(e):
+                raise ValueError("유효하지 않은 API Key입니다. 키를 다시 확인해주세요.")
             raise
     
     def is_configured(self) -> bool:
