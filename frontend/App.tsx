@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import RFPList from './components/RFPList';
 import AnalysisPanel from './components/AnalysisPanel';
 import TodoPanel from './components/TodoPanel';
-import { RFP } from './types';
+import DashboardWidget from './components/DashboardWidget';
+import { RFP, TodoItem } from './types';
 import { analyzeRFP, checkApiHealth } from './services/apiService';
 import { dbService } from './services/dbService';
 import { LayoutDashboard, Settings, X, Key, AlertCircle, CheckCircle } from 'lucide-react';
@@ -10,6 +11,7 @@ import { LayoutDashboard, Settings, X, Key, AlertCircle, CheckCircle } from 'luc
 const App: React.FC = () => {
   const [rfps, setRfps] = useState<RFP[]>([]);
   const [selectedRFP, setSelectedRFP] = useState<RFP | null>(null);
+  const [todos, setTodos] = useState<TodoItem[]>([]); // Add todos state
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [apiKey, setApiKey] = useState('');
@@ -43,25 +45,50 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // API Key가 없으면 설정 모달 자동 표시 (Mock Mode를 위해 제거)
-  /*
+  // API Key가 없으면 설정 모달 자동 표시
   useEffect(() => {
     if (!apiKey) {
       setShowSettings(true);
     }
   }, []);
-  */
+
+  // Subscribe to all Todos from Firestore (for dashboard stats)
+  useEffect(() => {
+    // Subscribe to all todos across all RFPs
+    const allRFPIds = rfps.map(r => r.id);
+    if (allRFPIds.length === 0) {
+      setTodos([]);
+      return;
+    }
+
+    // Aggregate todos from all RFPs
+    const unsubscribers: (() => void)[] = [];
+    const todosMap = new Map<string, TodoItem>();
+
+    allRFPIds.forEach(rfpId => {
+      const unsubscribe = dbService.subscribeTodos(rfpId, (rfpTodos) => {
+        // Update todos for this RFP
+        rfpTodos.forEach(todo => todosMap.set(todo.id, todo));
+        setTodos(Array.from(todosMap.values()));
+      });
+      unsubscribers.push(unsubscribe);
+    });
+
+    return () => {
+      unsubscribers.forEach(unsub => unsub());
+    };
+  }, [rfps]);
 
   const handleFileUpload = async (file: File) => {
-    // [MOCK MODE] API Key가 없으면 더미 키 사용
-    const effectiveApiKey = apiKey || "MOCK_KEY_FOR_TESTING";
+    // API Key가 없으면 빈 문자열 전송 (백엔드 .env 설정 사용 시도)
+    const effectiveApiKey = apiKey;
 
     /*
-    // API Key 체크 (Mock Mode를 위해 주석 처리)
+    // API Key 강제 체크를 원하시면 아래 주석을 해제하세요.
     if (!apiKey) {
-      setApiKeyError('API Key를 먼저 입력해주세요.');
+      setApiKeyError('API Key를 입력하거나, 백엔드 환경변수를 확인해주세요.');
       setShowSettings(true);
-      return;
+      // return; // .env 사용을 위해 리턴하지 않음
     }
     */
 
@@ -270,6 +297,11 @@ const App: React.FC = () => {
           </button>
         </div>
       </nav>
+
+      {/* Dashboard Widget */}
+      <div className="px-8 pt-6 max-w-[1600px] mx-auto">
+        <DashboardWidget rfps={rfps} todos={todos} />
+      </div>
 
       {/* Main Dashboard Layout */}
       <main className="p-8 max-w-[1600px] mx-auto">

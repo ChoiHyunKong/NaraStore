@@ -46,3 +46,20 @@ export interface TodoItem {
 }
 
 export type TabType = 'summary' | 'analysis' | 'strategy';
+
+// Dashboard Types
+export type PeriodType = '7days' | '1month' | '1year';
+
+export interface ActivityData {
+  date: string;      // ISO date string or month label
+  count: number;     // Number of analyses
+}
+
+export interface DashboardStats {
+  totalRFPs: number;
+  completedCount: number;
+  pendingCount: number;
+  errorCount: number;
+  todoCompletionRate: number;  // 0-1 (0% - 100%)
+  activityData: ActivityData[];
+}
