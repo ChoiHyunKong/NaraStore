@@ -45,8 +45,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
 
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(79, 70, 229, 0.06)';
-            ctx.fillStyle = 'rgba(79, 70, 229, 0.1)';
+            ctx.strokeStyle = 'rgba(79, 70, 229, 0.2)'; // Increased opacity for lines
+            ctx.fillStyle = 'rgba(79, 70, 229, 0.3)'; // Increased opacity for particles
 
             particles.forEach((p, i) => {
                 p.x += p.vx;
