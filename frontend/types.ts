@@ -60,6 +60,6 @@ export interface DashboardStats {
   completedCount: number;
   pendingCount: number;
   errorCount: number;
-  todoCompletionRate: number;  // 0-1 (0% - 100%)
+
   activityData: ActivityData[];
 }

@@ -79,6 +79,22 @@ export const dbService = {
         });
     },
 
+    // Real-time subscription to ALL Todos (Optimized for Dashboard)
+    subscribeAllTodos: (callback: (todos: TodoItem[]) => void) => {
+        const q = query(
+            collection(db, TODO_COLLECTION),
+            orderBy('createdAt', 'desc')
+        );
+
+        return onSnapshot(q, (snapshot) => {
+            const todos = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as TodoItem[];
+            callback(todos);
+        });
+    },
+
     // Add Todo for specific RFP
     addTodo: async (rfpId: string, text: string) => {
         return await addDoc(collection(db, TODO_COLLECTION), {

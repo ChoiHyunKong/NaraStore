@@ -4,7 +4,7 @@ import { RFP, TodoItem, PeriodType } from '../types';
 import { calculateStats, getActivityData } from '../services/dashboardService';
 import StatCard from './dashboard/StatCard';
 import ActivityChart from './dashboard/ActivityChart';
-import ProgressBar from './dashboard/ProgressBar';
+
 import { FileText, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 
 interface DashboardWidgetProps {
@@ -122,11 +122,6 @@ const DashboardWidget: React.FC<DashboardWidgetProps> = ({ rfps, todos }) => {
                         onPeriodChange={setPeriod}
                     />
 
-                    {/* Progress Bar */}
-                    <ProgressBar
-                        percentage={stats.todoCompletionRate}
-                        label="Todo 완료율"
-                    />
                 </div>
             )}
         </div>
