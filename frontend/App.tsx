@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import RFPList from './components/RFPList';
-import AnalysisPanel from './components/AnalysisPanel';
-import TodoPanel from './components/TodoPanel';
-import DashboardWidget from './components/DashboardWidget';
 import Footer from './components/Footer';
 import UpdatePage from './components/UpdatePage';
 import LandingPage from './components/pages/LandingPage';
+import DashboardPage from './components/pages/DashboardPage';
+import AnalysisPage from './components/pages/AnalysisPage';
 import { useRFP } from './hooks/useRFP';
-import { LayoutDashboard, Settings, X, Key, AlertCircle, CheckCircle, Bell } from 'lucide-react';
+import { LayoutDashboard, Settings, X, Key, AlertCircle, CheckCircle, Bell, FileText } from 'lucide-react';
 import { checkApiHealth } from './services/apiService';
 
-type ViewType = 'landing' | 'dashboard' | 'update';
+type ViewType = 'landing' | 'dashboard' | 'analysis' | 'update';
 
 const App: React.FC = () => {
-  // Auth state - moved from useAuth hook for landing page integration
+  // Auth state
   const [apiKey, setApiKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [isApiHealthy, setIsApiHealthy] = useState(false);
@@ -53,7 +51,7 @@ const App: React.FC = () => {
     return <LandingPage onEnter={handleEnterFromLanding} />;
   }
 
-  // Render Update Page
+  // Render Update Page (with layout)
   if (view === 'update') {
     return (
       <div className="min-h-screen text-slate-900 selection:bg-indigo-100 flex flex-col">
@@ -63,7 +61,7 @@ const App: React.FC = () => {
     );
   }
 
-  // Render Dashboard (main view)
+  // Render Main Layout (Dashboard or Analysis)
   return (
     <div className="min-h-screen text-slate-900 selection:bg-indigo-100 flex flex-col">
       {/* Settings Modal */}
@@ -131,16 +129,34 @@ const App: React.FC = () => {
 
       {/* Navigation */}
       <nav className="px-8 py-5 flex items-center justify-between sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-indigo-50">
-        <div
-          className="flex items-center gap-2 group cursor-pointer"
-          onClick={() => setView('dashboard')}
-        >
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:rotate-12 transition-transform">
-            <LayoutDashboard className="text-white w-6 h-6" />
+        <div className="flex items-center gap-6">
+          <div
+            className="flex items-center gap-2 group cursor-pointer"
+            onClick={() => setView('dashboard')}
+          >
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:rotate-12 transition-transform">
+              <LayoutDashboard className="text-white w-6 h-6" />
+            </div>
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-indigo-500">
+              NaraStore <span className="text-indigo-400 font-medium">Analytics</span>
+            </h1>
           </div>
-          <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-indigo-500">
-            NaraStore <span className="text-indigo-400 font-medium">Analytics</span>
-          </h1>
+
+          {/* Menu Items */}
+          <div className="hidden md:flex items-center gap-1 pl-6 border-l border-indigo-50">
+            <button
+              onClick={() => setView('dashboard')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${view === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+            >
+              대시보드
+            </button>
+            <button
+              onClick={() => setView('analysis')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${view === 'analysis' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+            >
+              분석실
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -179,42 +195,25 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Dashboard Widget */}
-      <div className="px-8 pt-6 max-w-[1600px] mx-auto">
-        <DashboardWidget rfps={rfps} todos={todos} />
-      </div>
-
-      {/* Main Dashboard Layout */}
-      <main className="p-8 max-w-[1600px] mx-auto flex-1">
-        <div className="grid grid-cols-12 gap-8 h-[calc(100vh-230px)] min-h-[700px]">
-          {/* Left Panel: RFP List */}
-          <div className="col-span-12 lg:col-span-4 xl:col-span-3 h-full overflow-hidden">
-            <RFPList
-              rfps={rfps}
-              onSelectRFP={setSelectedRFP}
-              selectedRFPId={selectedRFP?.id}
-              onDelete={handleDeleteRFP}
-            />
-          </div>
-
-          {/* Center Panel: RFP Analysis */}
-          <div className="col-span-12 lg:col-span-5 xl:col-span-6 h-full overflow-hidden">
-            <AnalysisPanel
-              currentRFP={selectedRFP}
-              onUpload={handleFileUpload}
-              isAnalyzing={isAnalyzing}
-              apiKeySet={!!apiKey}
-            />
-          </div>
-
-          {/* Right Panel: To-do List */}
-          <div className="col-span-12 lg:col-span-3 h-full overflow-hidden">
-            <TodoPanel
-              currentRFPId={selectedRFP?.id}
-            />
-          </div>
-        </div>
-      </main>
+      {/* Page Content */}
+      {view === 'dashboard' ? (
+        <DashboardPage
+          rfps={rfps}
+          todos={todos}
+          onNavigateToAnalysis={() => setView('analysis')}
+        />
+      ) : (
+        <AnalysisPage
+          rfps={rfps}
+          selectedRFP={selectedRFP}
+          setSelectedRFP={setSelectedRFP}
+          todos={todos}
+          isAnalyzing={isAnalyzing}
+          handleFileUpload={handleFileUpload}
+          handleDeleteRFP={handleDeleteRFP}
+          apiKeySet={!!apiKey}
+        />
+      )}
 
       {/* Footer */}
       <Footer />

@@ -7,14 +7,27 @@ interface UpdatePageProps {
 
 const updates = [
     {
+        version: "v1.3.0",
+        date: "2026. 01. 10",
+        type: "major",
+        title: "랜딩 페이지 도입 및 페이지 구조 개편",
+        items: [
+            { type: "new", text: "신규 랜딩 페이지 추가 (API Key 입력 및 소개)" },
+            { type: "improve", text: "페이지 라우팅 구조 개선 (랜딩 → 대시보드 → 분석)" },
+            { type: "improve", text: "배경 파티클 애니메이션 시각적 개선" },
+            { type: "new", text: "업데이트 노트 디자인 개선 (개조식)" }
+        ]
+    },
+    {
         version: "v1.2.0",
         date: "2026. 01. 09",
         type: "major", // major, feature, fix
         title: "Gemini 3.0 Flash 미리보기 적용, 성능 최적화",
         items: [
-            { type: "new", text: "Google Gemini 3.0 Flash Preview 모델 탑재로 분석 속도/정확도 향상" },
-            { type: "improve", text: "대시보드 라이브 데이터 구독 최적화 (버벅거림 해결)" },
-            { type: "fix", text: "그래프 툴팁 마우스 추적 시 딜레이 현상 수정" },
+            { type: "new", text: "Google Gemini 3.0 Flash Preview 모델 탑재" },
+            { type: "improve", text: "분석 속도 및 정확도 향상" },
+            { type: "improve", text: "대시보드 라이브 데이터 구독 최적화" },
+            { type: "fix", text: "그래프 툴팁 마우스 추적 딜레이 현상 수정" },
             { type: "new", text: "앱 전반적인 UI/UX 개선 (Glassmorphism 강화)" }
         ]
     },
@@ -67,8 +80,8 @@ const UpdatePage: React.FC<UpdatePageProps> = ({ onBack }) => {
                                 <div>
                                     <div className="flex items-center gap-3 mb-2">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${update.type === 'major' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' :
-                                                update.type === 'feature' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' :
-                                                    'bg-gray-500 text-white'
+                                            update.type === 'feature' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' :
+                                                'bg-gray-500 text-white'
                                             }`}>
                                             {update.type}
                                         </span>
