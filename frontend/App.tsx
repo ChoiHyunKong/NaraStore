@@ -5,10 +5,13 @@ import LandingPage from './components/pages/LandingPage';
 import DashboardPage from './components/pages/DashboardPage';
 import AnalysisPage from './components/pages/AnalysisPage';
 import { useRFP } from './hooks/useRFP';
-import { LayoutDashboard, Settings, X, Key, AlertCircle, CheckCircle, Bell, FileText } from 'lucide-react';
 import { checkApiHealth } from './services/apiService';
+import PersonnelPanel from './components/Personnel/PersonnelPanel';
+import { dbService } from './services/dbService';
+import { Personnel } from './types';
+import { LayoutDashboard, Settings, X, Key, AlertCircle, CheckCircle, Bell, Users } from 'lucide-react';
 
-type ViewType = 'landing' | 'dashboard' | 'analysis' | 'update';
+type ViewType = 'landing' | 'dashboard' | 'analysis' | 'update' | 'personnel';
 
 const App: React.FC = () => {
   // Auth state
@@ -39,6 +42,36 @@ const App: React.FC = () => {
     const interval = setInterval(checkHealth, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Personnel State & Handlers
+  const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
+
+  React.useEffect(() => {
+    const unsubscribe = dbService.subscribePersonnel((data) => {
+      setPersonnelList(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleAddPersonnel = async (person: Omit<Personnel, 'id' | 'registeredAt'>) => {
+    try {
+      await dbService.addPersonnel(person);
+    } catch (error) {
+      console.error("Failed to add personnel:", error);
+      alert("인원 추가 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDeletePersonnel = async (id: string) => {
+    if (window.confirm('정말 삭제하시겠습니까?')) {
+      try {
+        await dbService.deletePersonnel(id);
+      } catch (error) {
+        console.error("Failed to delete personnel:", error);
+        alert("삭제 중 오류가 발생했습니다.");
+      }
+    }
+  };
 
   // Handler for landing page entry
   const handleEnterFromLanding = (key: string) => {
@@ -156,6 +189,12 @@ const App: React.FC = () => {
             >
               대시보드
             </button>
+            <button
+              onClick={() => setView('personnel')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${view === 'personnel' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+            >
+              인력 현황
+            </button>
           </div>
         </div>
 
@@ -202,6 +241,14 @@ const App: React.FC = () => {
           todos={todos}
           onNavigateToAnalysis={() => setView('analysis')}
         />
+      ) : view === 'personnel' ? (
+        <div className="flex-1 p-8 overflow-hidden h-[calc(100vh-88px)]">
+          <PersonnelPanel
+            personnelList={personnelList}
+            onAdd={handleAddPersonnel}
+            onDelete={handleDeletePersonnel}
+          />
+        </div>
       ) : (
         <AnalysisPage
           rfps={rfps}

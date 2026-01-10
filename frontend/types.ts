@@ -63,3 +63,12 @@ export interface DashboardStats {
 
   activityData: ActivityData[];
 }
+
+export interface Personnel {
+  id: string;
+  name: string;
+  position: string;
+  experience: number;
+  techStack: string[];
+  registeredAt?: string;
+}

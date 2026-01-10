@@ -122,5 +122,29 @@ export const dbService = {
     // Delete Todo
     deleteTodo: async (id: string) => {
         await deleteDoc(doc(db, TODO_COLLECTION, id));
+    },
+
+    // --- Personnel Operations ---
+
+    subscribePersonnel: (callback: (personnel: import('../types').Personnel[]) => void) => {
+        const q = query(collection(db, 'personnel'), orderBy('name', 'asc'));
+        return onSnapshot(q, (snapshot) => {
+            const personnel = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })) as import('../types').Personnel[];
+            callback(personnel);
+        });
+    },
+
+    addPersonnel: async (person: Omit<import('../types').Personnel, 'id' | 'registeredAt'>) => {
+        return await addDoc(collection(db, 'personnel'), {
+            ...person,
+            registeredAt: serverTimestamp()
+        });
+    },
+
+    deletePersonnel: async (id: string) => {
+        await deleteDoc(doc(db, 'personnel', id));
     }
 };

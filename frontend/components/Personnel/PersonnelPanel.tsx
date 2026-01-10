@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { UserPlus, Users, Trash2, Edit3, Briefcase, Code2, Plus, X, Search } from 'lucide-react';
-import { Personnel } from '../types';
+import { Personnel } from '../../types';
 
 interface PersonnelPanelProps {
   personnelList: Personnel[];
@@ -12,7 +12,7 @@ interface PersonnelPanelProps {
 const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, onDelete }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -57,7 +57,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
     setIsAdding(false);
   };
 
-  const filteredList = personnelList.filter(p => 
+  const filteredList = personnelList.filter(p =>
     p.name.includes(searchTerm) || p.techStack.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -104,12 +104,12 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-indigo-300 uppercase tracking-widest ml-1">Full Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="성함을 입력하세요"
                 className="w-full bg-indigo-50/30 border border-transparent rounded-2xl px-5 py-4 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all placeholder:text-indigo-200"
                 value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
 
@@ -117,10 +117,10 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-indigo-300 uppercase tracking-widest ml-1">Position</label>
                 <div className="relative">
-                  <select 
+                  <select
                     className="w-full bg-indigo-50/30 border border-transparent rounded-2xl px-5 py-4 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all appearance-none cursor-pointer"
                     value={formData.position}
-                    onChange={e => setFormData({...formData, position: e.target.value})}
+                    onChange={e => setFormData({ ...formData, position: e.target.value })}
                   >
                     {positions.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
@@ -131,12 +131,12 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-indigo-300 uppercase tracking-widest ml-1">Exp. (Years)</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   min="0"
                   className="w-full bg-indigo-50/30 border border-transparent rounded-2xl px-5 py-4 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all"
                   value={formData.experience}
-                  onChange={e => setFormData({...formData, experience: parseInt(e.target.value) || 0})}
+                  onChange={e => setFormData({ ...formData, experience: parseInt(e.target.value) || 0 })}
                 />
               </div>
             </div>
@@ -144,12 +144,12 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
             <div className="space-y-2">
               <label className="text-[10px] font-black text-indigo-300 uppercase tracking-widest ml-1">Technology Stack</label>
               <div className="relative group">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="예: React, Node.js (Enter로 추가)"
                   className="w-full bg-indigo-50/30 border border-transparent rounded-2xl px-12 py-4 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all placeholder:text-indigo-200"
                   value={formData.currentTech}
-                  onChange={e => setFormData({...formData, currentTech: e.target.value})}
+                  onChange={e => setFormData({ ...formData, currentTech: e.target.value })}
                   onKeyDown={handleAddTech}
                 />
                 <Code2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-300 group-focus-within:text-indigo-500 transition-colors" />
@@ -168,7 +168,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
               className="w-full group/btn relative overflow-hidden bg-indigo-600 text-white font-bold py-4 rounded-2xl transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-200/50 active:scale-[0.98] flex items-center justify-center gap-2"
             >
@@ -189,8 +189,8 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                 회사 인원 현황
               </h2>
               <div className="relative w-full md:w-80 group">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="인력 이름 또는 기술 스택 검색..."
                   className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all"
                   value={searchTerm}
@@ -206,8 +206,8 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 auto-rows-fr">
               {filteredList.length > 0 ? (
                 filteredList.map(person => (
-                  <div 
-                    key={person.id} 
+                  <div
+                    key={person.id}
                     className="group glass-card bg-white/80 border-slate-100/80 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-100/30 p-6 rounded-[2rem] transition-all duration-500 flex flex-col relative overflow-hidden"
                   >
                     <div className="flex items-start justify-between mb-6">
@@ -226,7 +226,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                           </p>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => onDelete(person.id)}
                         className="p-2.5 text-slate-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
                         title="삭제"
@@ -234,10 +234,10 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     {/* Tech Stack Area - pushed to bottom via flex-grow and mt-auto */}
                     <div className="flex-grow"></div>
-                    
+
                     <div className="space-y-3 mt-6">
                       <div className="flex items-center gap-2">
                         <Code2 className="w-3 h-3 text-indigo-400" />
