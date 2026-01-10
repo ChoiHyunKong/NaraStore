@@ -202,72 +202,93 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
-            {/* auto-rows-fr ensures cards in the same row match in height */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 auto-rows-fr">
-              {filteredList.length > 0 ? (
-                filteredList.map(person => (
-                  <div
-                    key={person.id}
-                    className="group glass-card bg-white/80 border-slate-100/80 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-100/30 p-6 rounded-[2rem] transition-all duration-500 flex flex-col relative overflow-hidden"
-                  >
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl shadow-inner group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
-                          {person.name.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-black text-slate-900 text-lg tracking-tight group-hover:text-indigo-700 transition-colors">{person.name}</h4>
-                            <span className="px-2.5 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-black shadow-md shadow-indigo-100">{person.position}</span>
-                          </div>
-                          <p className="text-[12px] font-bold text-slate-400 mt-1.5 flex items-center gap-1.5">
-                            <Briefcase className="w-3.5 h-3.5 text-indigo-300" />
-                            전문 경력 {person.experience}년차
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => onDelete(person.id)}
-                        className="p-2.5 text-slate-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                        title="삭제"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+            {filteredList.length > 0 ? (
+              <div className="space-y-10">
+                {[...positions].reverse().map(position => {
+                  const peopleInPosition = filteredList.filter(p => p.position === position);
+                  if (peopleInPosition.length === 0) return null;
 
-                    {/* Tech Stack Area - pushed to bottom via flex-grow and mt-auto */}
-                    <div className="flex-grow"></div>
-
-                    <div className="space-y-3 mt-6">
-                      <div className="flex items-center gap-2">
-                        <Code2 className="w-3 h-3 text-indigo-400" />
-                        <span className="text-[9px] font-black text-indigo-300 uppercase tracking-widest">Main Tech Stacks</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {person.techStack.length > 0 ? person.techStack.map(tech => (
-                          <span key={tech} className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold border border-slate-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-all">
-                            {tech}
+                  return (
+                    <div key={position} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <div className="flex items-center gap-3 mb-4 pl-1">
+                        <div className="h-4 w-1 bg-indigo-500 rounded-full"></div>
+                        <h3 className="text-sm font-black text-indigo-900 flex items-center gap-2">
+                          {position}
+                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold">
+                            {peopleInPosition.length}
                           </span>
-                        )) : (
-                          <span className="text-[10px] text-slate-300 italic">등록된 기술 없음</span>
-                        )}
+                        </h3>
+                        <div className="h-px flex-1 bg-indigo-50"></div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 auto-rows-fr">
+                        {peopleInPosition.map(person => (
+                          <div
+                            key={person.id}
+                            className="group glass-card bg-white/80 border-slate-100/80 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-100/30 p-6 rounded-[2rem] transition-all duration-500 flex flex-col relative overflow-hidden"
+                          >
+                            <div className="flex items-start justify-between mb-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl shadow-inner group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500">
+                                  {person.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-black text-slate-900 text-lg tracking-tight group-hover:text-indigo-700 transition-colors">{person.name}</h4>
+                                    <span className="px-2.5 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-black shadow-md shadow-indigo-100">{person.position}</span>
+                                  </div>
+                                  <p className="text-[12px] font-bold text-slate-400 mt-1.5 flex items-center gap-1.5">
+                                    <Briefcase className="w-3.5 h-3.5 text-indigo-300" />
+                                    전문 경력 {person.experience}년차
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => onDelete(person.id)}
+                                className="p-2.5 text-slate-200 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                title="삭제"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* Tech Stack Area - pushed to bottom via flex-grow and mt-auto */}
+                            <div className="flex-grow"></div>
+
+                            <div className="space-y-3 mt-6">
+                              <div className="flex items-center gap-2">
+                                <Code2 className="w-3 h-3 text-indigo-400" />
+                                <span className="text-[9px] font-black text-indigo-300 uppercase tracking-widest">Main Tech Stacks</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {person.techStack.length > 0 ? person.techStack.map(tech => (
+                                  <span key={tech} className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold border border-slate-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-all">
+                                    {tech}
+                                  </span>
+                                )) : (
+                                  <span className="text-[10px] text-slate-300 italic">등록된 기술 없음</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Decorative background element */}
+                            <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-500/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
+                          </div>
+                        ))}
                       </div>
                     </div>
-
-                    {/* Decorative background element */}
-                    <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-500/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full py-40 flex flex-col items-center justify-center text-slate-300 bg-slate-50/30 rounded-[3rem] border-2 border-dashed border-slate-100">
-                  <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
-                    <Users className="w-10 h-10 opacity-20" />
-                  </div>
-                  <p className="font-black text-slate-400">등록된 인원이 없거나 검색 결과가 없습니다.</p>
-                  <p className="text-xs text-slate-300 mt-1">좌측 폼을 이용해 새로운 인력을 추가하세요.</p>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="col-span-full py-40 flex flex-col items-center justify-center text-slate-300 bg-slate-50/30 rounded-[3rem] border-2 border-dashed border-slate-100">
+                <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
+                  <Users className="w-10 h-10 opacity-20" />
                 </div>
-              )}
-            </div>
+                <p className="font-black text-slate-400">등록된 인원이 없거나 검색 결과가 없습니다.</p>
+                <p className="text-xs text-slate-300 mt-1">좌측 폼을 이용해 새로운 인력을 추가하세요.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
