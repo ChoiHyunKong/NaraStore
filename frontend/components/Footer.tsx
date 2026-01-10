@@ -25,6 +25,7 @@ const Footer: React.FC = () => {
                         <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors text-sm font-medium">이용약관</a>
                         <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors text-sm font-medium">개인정보처리방침</a>
                         <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors text-sm font-medium">도움말</a>
+                        <a href="https://my-ai-lab-blog.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-indigo-600 transition-colors text-sm font-medium">BeanLab이동</a>
                     </div>
 
                     {/* Social / Copyright - Right */}
