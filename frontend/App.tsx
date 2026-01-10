@@ -145,16 +145,16 @@ const App: React.FC = () => {
           {/* Menu Items */}
           <div className="hidden md:flex items-center gap-1 pl-6 border-l border-indigo-50">
             <button
-              onClick={() => setView('dashboard')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${view === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
-            >
-              대시보드
-            </button>
-            <button
               onClick={() => setView('analysis')}
               className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${view === 'analysis' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
             >
               분석실
+            </button>
+            <button
+              onClick={() => setView('dashboard')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-colors ${view === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+            >
+              대시보드
             </button>
           </div>
         </div>
