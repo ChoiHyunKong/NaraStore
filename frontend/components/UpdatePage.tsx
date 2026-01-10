@@ -7,6 +7,18 @@ interface UpdatePageProps {
 
 const updates = [
     {
+        version: "v1.3.1",
+        date: "2026. 01. 10",
+        type: "feature",
+        title: "회사 인력 현황 관리 기능 추가 및 안정화",
+        items: [
+            { type: "new", text: "인력 현황 대시보드 및 등록/관리 기능 추가" },
+            { type: "improve", text: "제안서 분석 엔진 안정성 강화 (오류 복구)" },
+            { type: "improve", text: "인원 등록/삭제 사용자 경험(UX) 개선" },
+            { type: "fix", text: "로그인 시 분석실로 자동 이동하도록 개선" }
+        ]
+    },
+    {
         version: "v1.3.0",
         date: "2026. 01. 10",
         type: "major",

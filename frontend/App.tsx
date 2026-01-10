@@ -56,6 +56,7 @@ const App: React.FC = () => {
   const handleAddPersonnel = async (person: Omit<Personnel, 'id' | 'registeredAt'>) => {
     try {
       await dbService.addPersonnel(person);
+      alert("성공적으로 등록되었습니다.");
     } catch (error) {
       console.error("Failed to add personnel:", error);
       alert("인원 추가 중 오류가 발생했습니다.");
@@ -66,6 +67,7 @@ const App: React.FC = () => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
       try {
         await dbService.deletePersonnel(id);
+        alert("삭제되었습니다.");
       } catch (error) {
         console.error("Failed to delete personnel:", error);
         alert("삭제 중 오류가 발생했습니다.");
