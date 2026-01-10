@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserPlus, Users, Trash2, Edit3, Briefcase, Code2, Plus, X, Search, Crown, Star } from 'lucide-react';
+import { UserPlus, Users, Trash2, Edit3, Briefcase, Code2, Plus, X, Search, Crown, Star, Filter } from 'lucide-react';
 import { Personnel } from '../../types';
 
 interface PersonnelPanelProps {
@@ -12,6 +12,7 @@ interface PersonnelPanelProps {
 const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPosition, setSelectedPosition] = useState('All');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -51,7 +52,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
     onAdd({
       name: formData.name,
       position: formData.position,
-      role: formData.role, // 직위 추가
+      role: formData.role,
       experience: formData.experience,
       techStack: formData.techStack
     });
@@ -59,74 +60,76 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
     setIsModalOpen(false);
   };
 
-  const filteredList = personnelList.filter(p =>
-    p.name.includes(searchTerm) || p.techStack.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredList = personnelList.filter(p => {
+    const matchesSearch = p.name.includes(searchTerm) || p.techStack.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesPosition = selectedPosition === 'All' || p.position === selectedPosition;
+    return matchesSearch && matchesPosition;
+  });
 
-  // 정렬 순서 정의
   const sortedPositions = [...positions].reverse();
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       {/* Top Header Section */}
       <div className="flex-none mb-6 space-y-4">
         {/* Stats Row */}
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-12 md:col-span-8 lg:col-span-9">
-            <div className="glass-card rounded-[2rem] p-5 shadow-lg shadow-indigo-100/50 border-indigo-50/50 flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                  <Users className="text-white w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Personnel</h3>
-                  <p className="text-3xl font-black text-slate-900 leading-tight">{personnelList.length} <span className="text-lg text-slate-400 font-bold">명</span></p>
-                </div>
-              </div>
-
-              <div className="h-10 w-px bg-slate-100 hidden md:block"></div>
-
-              <div className="flex gap-8">
-                <div>
-                  <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">Avg. Exp</span>
-                  <p className="text-xl font-black text-indigo-700">
-                    {personnelList.length > 0 ? (personnelList.reduce((acc, p) => acc + p.experience, 0) / personnelList.length).toFixed(1) : 0} <span className="text-sm">Yrs</span>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block mb-1">Skills</span>
-                  <p className="text-xl font-black text-violet-700">
-                    {Array.from(new Set(personnelList.flatMap(p => p.techStack))).length} <span className="text-sm">Sets</span>
-                  </p>
-                </div>
-              </div>
+        <div className="glass-card rounded-[2rem] p-5 shadow-lg shadow-indigo-100/50 border-indigo-50/50 flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+              <Users className="text-white w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Personnel</h3>
+              <p className="text-3xl font-black text-slate-900 leading-tight">{personnelList.length} <span className="text-lg text-slate-400 font-bold">명</span></p>
             </div>
           </div>
 
-          <div className="col-span-12 md:col-span-4 lg:col-span-3">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-full h-full glass-card bg-indigo-600 text-white rounded-[2rem] p-5 shadow-xl shadow-indigo-200/50 hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 transition-all flex flex-col items-center justify-center gap-2 group"
-            >
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-300">
-                <Plus className="w-6 h-6 text-white" />
-              </div>
-              <span className="font-bold text-lg">신규 인원 등록</span>
-            </button>
+          <div className="h-10 w-px bg-slate-100 hidden md:block"></div>
+
+          <div className="flex gap-8">
+            <div>
+              <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">Avg. Exp</span>
+              <p className="text-xl font-black text-indigo-700">
+                {personnelList.length > 0 ? (personnelList.reduce((acc, p) => acc + p.experience, 0) / personnelList.length).toFixed(1) : 0} <span className="text-sm">Yrs</span>
+              </p>
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider block mb-1">Skills</span>
+              <p className="text-xl font-black text-violet-700">
+                {Array.from(new Set(personnelList.flatMap(p => p.techStack))).length} <span className="text-sm">Sets</span>
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Search Bar Row */}
-        <div className="glass-card rounded-2xl p-2 pl-6 pr-2 flex items-center shadow-md shadow-indigo-50/50 border-indigo-50/30">
-          <Search className="w-5 h-5 text-slate-400 mr-3" />
+        {/* Search & Filter Bar */}
+        <div className="glass-card rounded-2xl p-2 pl-6 pr-2 flex items-center shadow-md shadow-indigo-50/50 border-indigo-50/30 gap-3">
+          <Search className="w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="인력 이름, 직위 또는 기술 스택 검색..."
+            placeholder="인력 이름 또는 기술 스택 검색..."
             className="flex-1 bg-transparent border-none focus:outline-none text-sm font-bold text-slate-700 placeholder:text-slate-400 h-10"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
-          <div className="text-[10px] font-bold bg-slate-100 text-slate-400 px-3 py-1.5 rounded-xl">
+
+          <div className="h-6 w-px bg-slate-200 mx-2"></div>
+
+          <div className="relative group">
+            <select
+              className="appearance-none bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold py-2 pl-3 pr-8 rounded-xl cursor-pointer hover:border-indigo-300 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+              value={selectedPosition}
+              onChange={e => setSelectedPosition(e.target.value)}
+            >
+              <option value="All">All Positions</option>
+              {sortedPositions.map(pos => (
+                <option key={pos} value={pos}>{pos}</option>
+              ))}
+            </select>
+            <Filter className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+
+          <div className="text-[10px] font-bold bg-indigo-50 text-indigo-500 px-3 py-1.5 rounded-xl ml-1">
             {filteredList.length} results
           </div>
         </div>
@@ -135,8 +138,10 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
       {/* Main Content: Personnel List Grid */}
       <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4 -mx-2">
         {filteredList.length > 0 ? (
-          <div className="space-y-12 pb-20">
+          <div className="space-y-12 pb-24">
             {sortedPositions.map(position => {
+              if (selectedPosition !== 'All' && position !== selectedPosition) return null;
+
               const peopleInPosition = filteredList.filter(p => p.position === position);
               if (peopleInPosition.length === 0) return null;
 
@@ -227,10 +232,19 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
               <Users className="w-10 h-10 opacity-20 text-slate-400" />
             </div>
             <p className="font-black text-slate-400 text-lg">등록된 인원이 없습니다.</p>
-            <p className="text-sm text-slate-400 mt-2">우측 상단의 버튼을 눌러 인원을 추가하세요.</p>
+            <p className="text-sm text-slate-400 mt-2">우측 하단의 버튼을 눌러 인원을 추가하세요.</p>
           </div>
         )}
       </div>
+
+      {/* Floating Action Button (FAB) */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="absolute bottom-8 right-8 bg-indigo-600 text-white rounded-full p-4 shadow-2xl shadow-indigo-400/50 hover:bg-indigo-700 hover:scale-110 active:scale-95 transition-all duration-300 z-40 group flex items-center gap-0 hover:gap-3 overflow-hidden hover:pr-6"
+      >
+        <Plus className="w-6 h-6" />
+        <span className="max-w-0 group-hover:max-w-xs transition-all duration-300 overflow-hidden whitespace-nowrap font-bold text-sm">신규 등록</span>
+      </button>
 
       {/* Registration Modal */}
       {isModalOpen && (
