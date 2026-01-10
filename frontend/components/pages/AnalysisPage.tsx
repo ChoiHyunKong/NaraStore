@@ -26,8 +26,8 @@ const AnalysisPage: React.FC<AnalysisPageProps> = ({
     apiKeySet
 }) => {
     return (
-        <div className="p-8 max-w-[1600px] mx-auto flex-1 w-full">
-            <div className="grid grid-cols-12 gap-8 h-[calc(100vh-140px)] min-h-[700px]">
+        <div className="p-8 max-w-[1600px] mx-auto flex-1 w-full h-full flex flex-col overflow-hidden">
+            <div className="grid grid-cols-12 gap-8 h-full overflow-hidden">
                 {/* Left Panel: RFP List */}
                 <div className="col-span-12 lg:col-span-4 xl:col-span-3 h-full overflow-hidden">
                     <RFPList
