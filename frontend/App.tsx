@@ -98,7 +98,7 @@ const App: React.FC = () => {
 
   // Render Main Layout (Dashboard or Analysis)
   return (
-    <div className="min-h-screen text-slate-900 selection:bg-indigo-100 flex flex-col">
+    <div className="h-screen text-slate-900 selection:bg-indigo-100 flex flex-col overflow-hidden">
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -163,7 +163,7 @@ const App: React.FC = () => {
       )}
 
       {/* Navigation */}
-      <nav className="px-8 py-5 flex items-center justify-between sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-indigo-50">
+      <nav className="flex-none px-8 py-5 flex items-center justify-between sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-indigo-50">
         <div className="flex items-center gap-6">
           <div
             className="flex items-center gap-2 group cursor-pointer"
@@ -237,35 +237,41 @@ const App: React.FC = () => {
       </nav>
 
       {/* Page Content */}
-      {view === 'dashboard' ? (
-        <DashboardPage
-          rfps={rfps}
-          todos={todos}
-          onNavigateToAnalysis={() => setView('analysis')}
-        />
-      ) : view === 'personnel' ? (
-        <div className="flex-1 p-8 overflow-hidden h-[calc(100vh-88px)]">
-          <PersonnelPanel
-            personnelList={personnelList}
-            onAdd={handleAddPersonnel}
-            onDelete={handleDeletePersonnel}
-          />
-        </div>
-      ) : (
-        <AnalysisPage
-          rfps={rfps}
-          selectedRFP={selectedRFP}
-          setSelectedRFP={setSelectedRFP}
-          todos={todos}
-          isAnalyzing={isAnalyzing}
-          handleFileUpload={handleFileUpload}
-          handleDeleteRFP={handleDeleteRFP}
-          apiKeySet={!!apiKey}
-        />
-      )}
+      <main className="flex-1 overflow-hidden flex flex-col relative w-full">
+        {view === 'dashboard' ? (
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <DashboardPage
+              rfps={rfps}
+              todos={todos}
+              onNavigateToAnalysis={() => setView('analysis')}
+            />
+          </div>
+        ) : view === 'personnel' ? (
+          <div className="flex-1 p-6 h-full overflow-hidden">
+            <PersonnelPanel
+              personnelList={personnelList}
+              onAdd={handleAddPersonnel}
+              onDelete={handleDeletePersonnel}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <AnalysisPage
+              rfps={rfps}
+              selectedRFP={selectedRFP}
+              setSelectedRFP={setSelectedRFP}
+              todos={todos}
+              isAnalyzing={isAnalyzing}
+              handleFileUpload={handleFileUpload}
+              handleDeleteRFP={handleDeleteRFP}
+              apiKeySet={!!apiKey}
+            />
+          </div>
+        )}
+      </main>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer - Hide on Personnel page to maximize space, or make flex-none */}
+      {view !== 'personnel' && <Footer />}
     </div>
   );
 };
