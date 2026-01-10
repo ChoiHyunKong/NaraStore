@@ -43,7 +43,7 @@ const App: React.FC = () => {
   // Handler for landing page entry
   const handleEnterFromLanding = (key: string) => {
     setApiKey(key);
-    setView('dashboard');
+    setView('analysis');
   };
 
   // Render Landing Page
