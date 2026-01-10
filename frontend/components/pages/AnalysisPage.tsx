@@ -2,13 +2,13 @@ import React from 'react';
 import RFPList from '../RFPList';
 import AnalysisPanel from '../AnalysisPanel';
 import TodoPanel from '../TodoPanel';
-import { RFP, Todo } from '../../types';
+import { RFP, TodoItem } from '../../types';
 
 interface AnalysisPageProps {
     rfps: RFP[];
     selectedRFP: RFP | null;
     setSelectedRFP: (rfp: RFP | null) => void;
-    todos: Todo[];
+    todos: TodoItem[];
     isAnalyzing: boolean;
     handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleDeleteRFP: (id: string) => void;

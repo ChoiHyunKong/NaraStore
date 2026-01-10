@@ -46,7 +46,7 @@ const updates = [
 
 const UpdatePage: React.FC<UpdatePageProps> = ({ onBack }) => {
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="h-screen overflow-hidden bg-gray-50/50">
             {/* Header */}
             <div className="bg-white border-b border-gray-100 py-6 px-4 md:px-8">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -66,7 +66,7 @@ const UpdatePage: React.FC<UpdatePageProps> = ({ onBack }) => {
             </div>
 
             {/* Content using Carousel Style Layout */}
-            <div className="max-w-3xl mx-auto px-6 py-12 space-y-12">
+            <div className="max-w-3xl mx-auto px-6 py-12 space-y-12 h-[calc(100vh-88px)] overflow-y-auto custom-scrollbar">
                 {updates.map((update, index) => (
                     <div key={index} className="relative pl-8 md:pl-0">
                         {/* Timeline Line */}

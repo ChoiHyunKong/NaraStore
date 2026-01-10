@@ -1,11 +1,11 @@
 import React from 'react';
 import DashboardWidget from '../DashboardWidget';
 import { LayoutDashboard, ArrowRight, FileText } from 'lucide-react';
-import { RFP, Todo } from '../../types';
+import { RFP, TodoItem } from '../../types';
 
 interface DashboardPageProps {
     rfps: RFP[];
-    todos: Todo[];
+    todos: TodoItem[];
     onNavigateToAnalysis: () => void;
 }
 
@@ -30,21 +30,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ rfps, todos, onNavigateTo
             {/* Existing Dashboard Widget */}
             <DashboardWidget rfps={rfps} todos={todos} />
 
-            {/* Additional Dashboard Content Placeholders */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-3xl shadow-sm border border-indigo-50">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">최근 분석 활동</h3>
-                    <div className="h-40 flex items-center justify-center text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        활동 로그 준비 중...
-                    </div>
-                </div>
-                <div className="bg-white p-6 rounded-3xl shadow-sm border border-indigo-50">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">시스템 상태</h3>
-                    <div className="h-40 flex items-center justify-center text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        시스템 모니터링 준비 중...
-                    </div>
-                </div>
-            </div>
+
         </div>
     );
 };
