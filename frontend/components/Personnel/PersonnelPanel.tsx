@@ -64,7 +64,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
   return (
     <div className="grid grid-cols-12 gap-8 h-full">
       {/* Left Column: Stats & Registration Form */}
-      <div className="col-span-12 lg:col-span-4 space-y-6 overflow-y-auto custom-scrollbar pr-2">
+      <div className="col-span-12 lg:col-span-4 space-y-6 h-full overflow-y-auto custom-scrollbar pr-2">
         {/* Stats Card */}
         <div className="glass-card rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border-indigo-50/50">
           <div className="flex items-center gap-3 mb-6">
@@ -221,7 +221,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                         <div className="h-px flex-1 bg-indigo-50"></div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 auto-rows-fr">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 auto-rows-fr">
                         {peopleInPosition.map(person => (
                           <div
                             key={person.id}
