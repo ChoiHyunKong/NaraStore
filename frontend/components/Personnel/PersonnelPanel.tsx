@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserPlus, Users, Trash2, Code2, Plus, X, Search, Briefcase, Crown } from 'lucide-react';
+import { UserPlus, Users, Trash2, Code2, Plus, X, Search, Briefcase, Crown, BadgeCheck } from 'lucide-react';
 import { Personnel } from '../../types';
 
 interface PersonnelPanelProps {
@@ -16,12 +16,14 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
   const [formData, setFormData] = useState({
     name: '',
     position: '사원',
+    role: '팀원', // Default Role
     experience: 1,
     currentTech: '',
     techStack: [] as string[]
   });
 
   const positions = ['사원', '대리', '과장', '차장', '부장', '이사', '대표'];
+  const roles = ['팀원', '파트장', '팀장', '본부장', 'CTO', 'CEO']; // Roles selection
 
   const handleAddTech = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && formData.currentTech.trim()) {
@@ -49,10 +51,11 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
     onAdd({
       name: formData.name,
       position: formData.position,
+      role: formData.role,
       experience: formData.experience,
       techStack: formData.techStack
     });
-    setFormData({ name: '', position: '사원', experience: 1, currentTech: '', techStack: [] });
+    setFormData({ name: '', position: '사원', role: '팀원', experience: 1, currentTech: '', techStack: [] });
   };
 
   const filteredList = personnelList.filter(p =>
@@ -60,9 +63,9 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
   );
 
   return (
-    <div className="grid grid-cols-12 gap-6 h-full">
-      {/* Left Column: Stats & Registration Form (Reduced width: col-span-3) */}
-      <div className="col-span-12 lg:col-span-3 space-y-4 h-full flex flex-col">
+    <div className="grid grid-cols-12 gap-6 h-full min-h-0">
+      {/* Left Column: Stats & Registration Form (Fixed) */}
+      <div className="col-span-12 lg:col-span-3 space-y-4 h-full flex flex-col min-h-0">
         {/* Stats Card */}
         <div className="glass-card rounded-[2rem] p-5 shadow-xl shadow-indigo-100/50 border-indigo-50/50 flex-shrink-0">
           <div className="flex items-center gap-3 mb-4">
@@ -81,17 +84,11 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                 {personnelList.length > 0 ? (personnelList.reduce((acc, p) => acc + p.experience, 0) / personnelList.length).toFixed(1) : 0} <span className="text-[10px] text-indigo-400">Yrs</span>
               </p>
             </div>
-            <div className="bg-violet-50/50 p-3 rounded-xl border border-violet-100/20 flex justify-between items-center">
-              <span className="text-[9px] font-bold text-violet-400 uppercase tracking-wider">Skills</span>
-              <p className="text-base font-black text-violet-700">
-                {Array.from(new Set(personnelList.flatMap(p => p.techStack))).length} <span className="text-[10px] text-violet-400">Sets</span>
-              </p>
-            </div>
           </div>
         </div>
 
         {/* Registration Form Card (Scrollable if needed) */}
-        <div className="glass-card rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border-indigo-50/50 relative overflow-hidden flex-1 overflow-y-auto custom-scrollbar">
+        <div className="glass-card rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border-indigo-50/50 relative overflow-hidden flex-1 overflow-y-auto custom-scrollbar min-h-0">
           <div className="flex items-center gap-2 mb-6">
             <UserPlus className="w-5 h-5 text-indigo-600" />
             <h2 className="text-lg font-bold text-slate-900">인원 등록</h2>
@@ -103,24 +100,41 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
               <input
                 type="text"
                 placeholder="성함 입력"
-                className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all placeholder:text-indigo-200"
+                className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all placeholder:text-indigo-300"
                 value={formData.name}
                 onChange={e => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-black text-indigo-300 uppercase tracking-widest ml-1">Position</label>
-              <div className="relative">
-                <select
-                  className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all appearance-none cursor-pointer"
-                  value={formData.position}
-                  onChange={e => setFormData({ ...formData, position: e.target.value })}
-                >
-                  {positions.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                  <Plus className="w-3.5 h-3.5 rotate-45" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-indigo-300 uppercase tracking-widest ml-1">Position</label>
+                <div className="relative">
+                  <select
+                    className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-3 py-3 text-xs font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all appearance-none cursor-pointer"
+                    value={formData.position}
+                    onChange={e => setFormData({ ...formData, position: e.target.value })}
+                  >
+                    {positions.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                    <Plus className="w-3 h-3 rotate-45" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[9px] font-black text-indigo-300 uppercase tracking-widest ml-1">Role</label>
+                <div className="relative">
+                  <select
+                    className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-3 py-3 text-xs font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all appearance-none cursor-pointer"
+                    value={formData.role}
+                    onChange={e => setFormData({ ...formData, role: e.target.value })}
+                  >
+                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                    <Plus className="w-3 h-3 rotate-45" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,23 +155,28 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
               <div className="relative group">
                 <input
                   type="text"
-                  placeholder="기술 스택 (Enter)"
-                  className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-10 py-3 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all placeholder:text-indigo-200"
+                  placeholder="기술 스택 입력 후 Enter"
+                  className="w-full bg-indigo-50/30 border border-transparent rounded-xl px-10 py-3 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all placeholder:text-indigo-300"
                   value={formData.currentTech}
                   onChange={e => setFormData({ ...formData, currentTech: e.target.value })}
                   onKeyDown={handleAddTech}
                 />
                 <Code2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-500 transition-colors" />
               </div>
-              <div className="flex flex-wrap gap-1.5 mt-2 min-h-[30px]">
-                {formData.techStack.map(tech => (
-                  <span key={tech} className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100/50 text-indigo-600 border border-indigo-200/50 rounded-lg text-[10px] font-black uppercase tracking-wider animate-in zoom-in-95">
+              <div className="flex flex-wrap gap-1.5 mt-2 min-h-[40px] bg-slate-50/50 p-2 rounded-xl border border-slate-100/50">
+                {formData.techStack.length > 0 ? formData.techStack.map(tech => (
+                  <span key={tech} className="inline-flex items-center gap-1 px-2 py-1 bg-white text-indigo-600 border border-indigo-100 rounded-lg text-[10px] font-black uppercase tracking-wider animate-in zoom-in-95 shadow-sm">
                     {tech}
                     <button type="button" onClick={() => removeTech(tech)} className="hover:text-red-500 transition-colors">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
-                ))}
+                )) : (
+                  <span className="text-[10px] text-indigo-200 font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Enter 키를 눌러 추가하세요
+                  </span>
+                )}
               </div>
             </div>
 
@@ -173,10 +192,10 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
       </div>
 
       {/* Right Column: Personnel List Grid (Expanded width: col-span-9) */}
-      <div className="col-span-12 lg:col-span-9 h-full flex flex-col">
+      <div className="col-span-12 lg:col-span-9 h-full flex flex-col min-h-0">
         <div className="glass-card rounded-[2.5rem] shadow-xl shadow-indigo-100/50 border-indigo-50/50 flex flex-col h-full overflow-hidden">
           {/* Header */}
-          <div className="p-8 pb-4 flex-none">
+          <div className="p-8 pb-4 flex-none z-20 bg-white/50 backdrop-blur-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
               <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
                 <Users className="w-6 h-6 text-indigo-600" />
@@ -186,7 +205,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                 <input
                   type="text"
                   placeholder="이름 또는 기술 스택 검색..."
-                  className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-3.5 pl-12 pr-4 text-xs font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-400 transition-all"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
@@ -196,7 +215,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
           </div>
 
           {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8 min-h-0">
             {filteredList.length > 0 ? (
               <div className="space-y-8">
                 {[...positions].reverse().map(position => {
@@ -205,7 +224,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
 
                   return (
                     <div key={position} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <div className="flex items-center gap-3 mb-4 pl-1 sticky top-0 bg-white/90 backdrop-blur-sm z-10 py-2">
+                      <div className="flex items-center gap-3 mb-4 pl-1 sticky top-0 bg-white/95 backdrop-blur-md z-10 py-2 border-b border-white rounded-t-xl transition-all">
                         <div className="h-4 w-1 bg-indigo-500 rounded-full"></div>
                         <h3 className="text-sm font-black text-indigo-900 flex items-center gap-2">
                           {position}
@@ -213,7 +232,7 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                             {peopleInPosition.length}
                           </span>
                         </h3>
-                        <div className="h-px flex-1 bg-indigo-50"></div>
+                        <div className="h-px flex-1 bg-indigo-50/50"></div>
                       </div>
 
                       {/* Grid Layout: Up to 4 columns */}
@@ -236,10 +255,18 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
                                     </h4>
                                     <span className="px-2 py-0.5 bg-indigo-600 text-white rounded-lg text-[9px] font-black shadow-md shadow-indigo-100">{person.position}</span>
                                   </div>
-                                  <p className="text-[11px] font-bold text-slate-400 mt-1 flex items-center gap-1">
-                                    <Briefcase className="w-3 h-3 text-indigo-300" />
-                                    경력 {person.experience}년차
-                                  </p>
+                                  <div className="flex items-center gap-1.5 mt-1">
+                                    <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                                      <Briefcase className="w-3 h-3 text-indigo-300" />
+                                      {person.experience}년차
+                                    </p>
+                                    {person.role && (
+                                      <span className="px-1.5 py-0.5 bg-violet-50 text-violet-600 rounded-md text-[9px] font-bold border border-violet-100/50 flex items-center gap-0.5">
+                                        <BadgeCheck className="w-2.5 h-2.5" />
+                                        {person.role}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                               <button
@@ -297,5 +324,26 @@ const PersonnelPanel: React.FC<PersonnelPanelProps> = ({ personnelList, onAdd, o
     </div>
   );
 };
+
+function AlertCircle(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" x2="12" y1="8" y2="12" />
+      <line x1="12" x2="12.01" y1="16" y2="16" />
+    </svg>
+  )
+}
 
 export default PersonnelPanel;

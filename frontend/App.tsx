@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Footer from './components/Footer';
 import UpdatePage from './components/UpdatePage';
@@ -237,7 +238,7 @@ const App: React.FC = () => {
       </nav>
 
       {/* Page Content */}
-      <main className="flex-1 overflow-hidden flex flex-col relative w-full">
+      <main className="flex-1 overflow-hidden flex flex-col relative w-full min-h-0">
         {view === 'dashboard' ? (
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <DashboardPage
@@ -247,7 +248,7 @@ const App: React.FC = () => {
             />
           </div>
         ) : view === 'personnel' ? (
-          <div className="flex-1 p-6 h-full overflow-hidden">
+          <div className="flex-1 p-6 h-full overflow-hidden min-h-0">
             <PersonnelPanel
               personnelList={personnelList}
               onAdd={handleAddPersonnel}
@@ -255,7 +256,7 @@ const App: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             <AnalysisPage
               rfps={rfps}
               selectedRFP={selectedRFP}
