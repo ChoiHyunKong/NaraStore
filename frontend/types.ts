@@ -68,6 +68,7 @@ export interface Personnel {
   id: string;
   name: string;
   position: string;
+  role?: string; // e.g. 팀장, 파트장, 선임 (직위)
   experience: number;
   techStack: string[];
   registeredAt?: string;
