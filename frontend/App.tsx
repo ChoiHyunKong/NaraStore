@@ -101,7 +101,7 @@ const App: React.FC = () => {
   const isFixedLayout = view === 'personnel' || view === 'analysis';
 
   return (
-    <div className={`${isFixedLayout ? 'h-screen overflow-hidden' : 'min-h-screen'} text-slate-900 selection:bg-indigo-100 flex flex-col`}>
+    <div className="min-h-screen text-slate-900 selection:bg-indigo-100 flex flex-col">
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -240,9 +240,9 @@ const App: React.FC = () => {
       </nav>
 
       {/* Page Content */}
-      <main className={`flex-1 flex flex-col relative w-full ${isFixedLayout ? 'overflow-hidden min-h-0' : ''}`}>
+      <main className="flex-1 flex flex-col relative w-full">
         {view === 'dashboard' ? (
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex-1">
             <DashboardPage
               rfps={rfps}
               todos={todos}
@@ -250,7 +250,7 @@ const App: React.FC = () => {
             />
           </div>
         ) : view === 'personnel' ? (
-          <div className="flex-1 p-6 h-full overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col">
             <PersonnelPanel
               personnelList={personnelList}
               onAdd={handleAddPersonnel}
@@ -272,8 +272,6 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
-
-      {/* Footer Removed by User Request */}
     </div>
   );
 };
