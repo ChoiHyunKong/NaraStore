@@ -2,12 +2,14 @@ from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
 class AnalysisSummary(BaseModel):
+    project_name: str = Field(description="제안요청서에 명시된 사업명")
     overview: str = Field(description="사업의 배경, 핵심 내용, 중요성을 종합적으로 서술한 요약문 (3~5문장)")
     purpose: str = Field(description="이 사업이 발주된 목적과 달성하고자 하는 최종 목표")
-    expected_effects: List[str] = Field(description="프로젝트 수행 시 기대되는 이점 및 효과 목록")
-    project_name: str = Field(description="제안요청서에 명시된 사업명")
+    key_keywords: List[str] = Field(description="이 사업의 핵심 키워드 3~5개 (필수 생성)")
+    client_priorities: List[str] = Field(description="발주처가 가장 중요시하는 포인트 3~5개 (필수 생성)")
     period: str = Field(description="사업 수행 기간")
     budget: str = Field(description="사업 예산 (명시되지 않은 경우 '내용 없음' 등의 텍스트)")
+    expected_effects: List[str] = Field(description="프로젝트 수행 시 기대되는 이점 및 효과 목록")
     total_requirements_count: int = Field(description="추출된 전체 요구사항의 총 개수")
 
 class StrategyConfig(BaseModel):

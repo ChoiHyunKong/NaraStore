@@ -2,6 +2,8 @@
 export interface AnalysisSummary {
   overview: string;
   purpose: string;
+  key_keywords: string[];
+  client_priorities: string[];
   expected_effects: string[];
   project_name: string;
   period: string;
