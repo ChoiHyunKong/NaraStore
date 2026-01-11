@@ -23,10 +23,23 @@ class RequirementCategory(BaseModel):
     category: str = Field(description="요구사항 카테고리 명칭 (예: '기능 요구사항', '보안 요구사항' 등 RFP 목차 그대로)")
     items: List[str] = Field(description="해당 카테고리의 상세 요구사항 목록")
 
+class TodoItem(BaseModel):
+    task: str = Field(description="구체적인 할 일 내용")
+
+class ResourceRequirement(BaseModel):
+    role: str = Field(description="필요 역할 (예: PM, PL, FE개발, BE개발, 디자인)")
+    count: int = Field(description="필요 인원 수")
+    required_skills: List[str] = Field(description="이 역할에 필요한 핵심 기술 스택")
+    reason: str = Field(description="이 인력이 필요한 구체적인 이유 및 담당 업무")
+
 class AnalysisResult(BaseModel):
     summary: AnalysisSummary
     requirements: List[RequirementCategory] = Field(
         description="제안서의 요구사항을 카테고리별로 분류한 리스트"
     )
     strategy: StrategyConfig
+    resource_requirements: List[ResourceRequirement] = Field(
+        description="프로젝트 수행을 위해 필요한 인력 구성 및 요건 (Phase 4)",
+        default=[] 
+    )
     todo_list: List[str] = Field(description="이 제안 작업을 완료하기 위해 수행해야 할 구체적인 할 일 목록 (8개 내외)")

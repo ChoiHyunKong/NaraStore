@@ -268,6 +268,7 @@ const App: React.FC = () => {
               handleFileUpload={handleFileUpload}
               handleDeleteRFP={handleDeleteRFP}
               apiKeySet={!!apiKey}
+              personnelList={personnelList}
             />
           </div>
         )}

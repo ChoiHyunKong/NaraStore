@@ -153,6 +153,14 @@ class ProposalAnalyzer:
 - "다국어 지원 (한국어, 영어, 일본어, 중국어 - UTF-8 인코딩)"
 ```
 
+**6. 인력 구성 분석 (Resource Requirements) - 필수**
+- 프로젝트 성공을 위해 필요한 핵심 인력 구성을 분석하세요.
+- 역할(Role), 필요 인원(Count), 필수 핵심 기술(Required Skills), 필요 사유(Reason)를 명시하세요.
+- 예시:
+    - Role: "PM (프로젝트 관리자)", Count: 1, Skills: ["PMP", "감리 대응", "공공 사업 경험"], Reason: "전체 사업 총괄 및 위험 관리"
+    - Role: "Backend 개발자", Count: 2, Skills: ["Python", "FastAPI", "PostgreSQL"], Reason: "분석 엔진 및 API 서버 구축"
+
+
 [제안요청서 내용]
 {document_text}
 """
@@ -229,7 +237,38 @@ class ProposalAnalyzer:
         if strategy_missing:
             logger.warning(f"전략 필드 보완됨: {', '.join(strategy_missing)}")
         
+        if strategy_missing:
+            logger.warning(f"전략 필드 보완됨: {', '.join(strategy_missing)}")
+        
         parsed['strategy'] = strategy
+
+        # Resource Requirements 필드 보완 (Phase 4)
+        resources = parsed.get('resource_requirements', [])
+        if not resources:
+            logger.warning("인력 요건 필드 누락되어 자동 생성됨")
+            # 기본 인력 구성 생성
+            resources = [
+                {
+                    "role": "PM (프로젝트 관리자)",
+                    "count": 1,
+                    "required_skills": ["프로젝트 관리", "커뮤니케이션", "문서 작성"],
+                    "reason": "사업 총괄 및 이슈 관리"
+                },
+                {
+                    "role": "PL (프로젝트 리더)",
+                    "count": 1,
+                    "required_skills": ["아키텍처 설계", "기술 리딩"],
+                    "reason": "기술 파트 총괄 및 설계"
+                },
+                {
+                    "role": "개발자",
+                    "count": 2,
+                    "required_skills": ["Java", "Spring Boot", "SQL"],
+                    "reason": "핵심 기능 개발 및 구현"
+                }
+            ]
+        
+        parsed['resource_requirements'] = resources
 
 
 def create_analyzer(api_key: str = None) -> ProposalAnalyzer:

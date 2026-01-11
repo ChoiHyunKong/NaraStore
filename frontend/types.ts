@@ -24,10 +24,19 @@ export interface RequirementCategory {
   items: string[];
 }
 
+export interface ResourceRequirement {
+  role: string;
+  count: number;
+  required_skills: string[];
+  reason: string;
+}
+
 export interface AnalysisResultData {
   summary: AnalysisSummary;
-  requirements: RequirementCategory[]; // 리스트 형태로 변경
+  requirements: RequirementCategory[];
   strategy: StrategyConfig;
+  // Phase 4
+  resource_requirements?: ResourceRequirement[];
   todo_list: string[];
 }
 
@@ -52,7 +61,7 @@ export interface TodoItem {
   completed: boolean;
 }
 
-export type TabType = 'summary' | 'analysis' | 'strategy';
+export type TabType = 'summary' | 'analysis' | 'strategy' | 'resource';
 
 // Dashboard Types
 export type PeriodType = '7days' | '1month' | '1year';
@@ -80,4 +89,7 @@ export interface Personnel {
   experience: number;
   techStack: string[];
   registeredAt?: string;
+  // Phase 4: Resource Allocation Extensions
+  status?: 'available' | 'busy' | 'leave';
+  currentProject?: string;
 }
