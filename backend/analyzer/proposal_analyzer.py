@@ -3,7 +3,7 @@
 Gemini API를 사용한 제안서 요약 및 분석
 """
 import json
-from typing import Dict
+from typing import Dict, Any
 from backend.analyzer.schemas import AnalysisResult
 from backend.analyzer.gemini.client import create_client
 from backend.analyzer.gemini.request import create_request_handler
@@ -40,6 +40,8 @@ class ProposalAnalyzer:
                 cached = analysis_cache.get(document_text, "structured_analysis")
                 if cached:
                     logger.info("캐시에서 구조화 분석 결과 반환")
+                    # 캐시된 데이터도 누락 필드 보완
+                    self._apply_field_completion(cached)
                     return True, cached
             
             prompt = self._build_structured_analysis_prompt(document_text)
@@ -69,41 +71,8 @@ class ProposalAnalyzer:
                     logger.error(f"JSON 파싱 실패. 원본 응답:\n{response_text}")
                     return False, "AI 응답을 구조화된 데이터로 변환하는데 실패했습니다. (JSON Parsing Error)"
 
-            # 누락 필드 보완 (Gemini API가 생성하지 않은 필드 추가)
-            summary = parsed.get('summary', {})
-            missing_fields = []
-            
-            # overview 누락 시 간단한 요약 생성
-            if not summary.get('overview'):
-                missing_fields.append('overview')
-                summary['overview'] = f"{summary.get('project_name', '본 사업')}은/는 디지털 혁신과 서비스 향상을 목표로 발주되었습니다."
-            
-            # purpose 누락 시 기본값 생성
-            if not summary.get('purpose'):
-                missing_fields.append('purpose')
-                summary['purpose'] = "디지털 전환 및 서비스 품질 향상을 통한 사용자 만족도 제고"
-            
-            # key_keywords 누락 시 프로젝트명에서 추출
-            if not summary.get('key_keywords') or len(summary.get('key_keywords', [])) == 0:
-                missing_fields.append('key_keywords')
-                project_name = summary.get('project_name', '')
-                # 간단한 키워드 추출 (공백 기준)
-                words = project_name.replace('사업', '').replace('구축', '').replace('용역', '').split()
-                summary['key_keywords'] = words[:3] if len(words) >= 3 else ['디지털 혁신', '서비스 개선', '시스템 구축']
-            
-            # client_priorities 누락 시 일반적인 우선순위 제공
-            if not summary.get('client_priorities') or len(summary.get('client_priorities', [])) == 0:
-                missing_fields.append('client_priorities')
-                summary['client_priorities'] = [
-                    "사업 일정 준수 및기대 품질 확보",
-                    "시스템 안정성 및 보안 강화",
-                    "사용자 편의성 극대화"
-                ]
-            
-            if missing_fields:
-                logger.warning(f"누락된 필드 보완됨: {', '.join(missing_fields)}")
-            
-            parsed['summary'] = summary
+            # 누락 필드 보완 적용
+            self._apply_field_completion(parsed)
 
             # 캐시 저장
             if self.use_cache:
@@ -188,6 +157,79 @@ class ProposalAnalyzer:
 {document_text}
 """
         return prompt
+    
+    def _apply_field_completion(self, parsed: Dict[str, Any]):
+        """누락된 필드 자동 보완 (캐시/신규 분석 모두 적용)"""
+        # Summary 필드 보완
+        summary = parsed.get('summary', {})
+        missing_fields = []
+        
+        # overview 누락 시 간단한 요약 생성
+        if not summary.get('overview'):
+            missing_fields.append('overview')
+            summary['overview'] = f"{summary.get('project_name', '본 사업')}은/는 디지털 혁신과 서비스 향상을 목표로 발주되었습니다."
+        
+        # purpose 누락 시 기본값 생성
+        if not summary.get('purpose'):
+            missing_fields.append('purpose')
+            summary['purpose'] = "디지털 전환 및 서비스 품질 향상을 통한 사용자 만족도 제고"
+        
+        # key_keywords 누락 시 프로젝트명에서 추출
+        if not summary.get('key_keywords') or len(summary.get('key_keywords', [])) == 0:
+            missing_fields.append('key_keywords')
+            project_name = summary.get('project_name', '')
+            words = [w for w in project_name.replace('사업', '').replace('구축', '').replace('용역', '').split() if len(w) > 1]
+            summary['key_keywords'] = words[:3] if len(words) >= 3 else ['디지털 혁신', '서비스 개선', '시스템 구축']
+        
+        # client_priorities 누락 시 일반적인 우선순위 제공
+        if not summary.get('client_priorities') or len(summary.get('client_priorities', [])) == 0:
+            missing_fields.append('client_priorities')
+            summary['client_priorities'] = [
+                "사업 일정 준수 및 기대 품질 확보",
+                "시스템 안정성 및 보안 강화",
+                "사용자 편의성 극대화"
+            ]
+        
+        if missing_fields:
+            logger.warning(f"누락된 필드 보완됨: {', '.join(missing_fields)}")
+        
+        parsed['summary'] = summary
+
+        # Strategy 필드 보완 (Phase 3)
+        strategy = parsed.get('strategy', {})
+        strategy_missing = []
+        
+        # anchor_points 누락 시 기본 전략 제공
+        if not strategy.get('anchor_points') or len(strategy.get('anchor_points', [])) == 0:
+            strategy_missing.append('anchor_points')
+            strategy['anchor_points'] = [
+                "발주처 핵심 요구사항 충족을 위한 맞춤형 솔루션 제공",
+                "사업 일정 및 품질 목표 달성을 위한 체계적 프로젝트 관리",
+                "발주처와의 긴밀한 협업 및 커뮤니케이션 체계 구축"
+            ]
+        
+        # differentiation 누락 시 기본 차별화 요소 제공
+        if not strategy.get('differentiation') or len(strategy.get('differentiation', [])) == 0:
+            strategy_missing.append('differentiation')
+            strategy['differentiation'] = [
+                "유사 프로젝트 수행 경험 및 검증된 방법론 보유",
+                "최신 기술 트렌드 적용 역량 및 전문 인력 확보",
+                "안정적인 시스템 구축 및 운영 지원 체계"
+            ]
+        
+        # risk_mitigation 누락 시 기본 리스크 완화 전략 제공
+        if not strategy.get('risk_mitigation') or len(strategy.get('risk_mitigation', [])) == 0:
+            strategy_missing.append('risk_mitigation')
+            strategy['risk_mitigation'] = [
+                "일정 지연 방지를 위한 버퍼 기간 확보 및 우선순위 관리",
+                "품질 이슈 최소화를 위한 단계별 검수 및 테스트 강화",
+                "긴급 상황 대응을 위한 비상 연락망 및 지원 체계 구축"
+            ]
+        
+        if strategy_missing:
+            logger.warning(f"전략 필드 보완됨: {', '.join(strategy_missing)}")
+        
+        parsed['strategy'] = strategy
 
 
 def create_analyzer(api_key: str = None) -> ProposalAnalyzer:

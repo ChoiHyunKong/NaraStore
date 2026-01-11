@@ -7,6 +7,18 @@ interface UpdatePageProps {
 
 const updates = [
     {
+        version: "v1.5.0",
+        date: "2026. 01. 11",
+        type: "major",
+        title: "수주 전략 분석 고도화 및 인사이트 강화",
+        items: [
+            { type: "new", text: "전략적 인사이트 3대 요소 추가 (앵커 포인트, 차별화 요소, 리스크 완화)" },
+            { type: "improve", text: "수주 전략 리포트 UI 전면 개편 (가독성 높은 카드형 레이아웃)" },
+            { type: "improve", text: "AI 분석 엔진 고도화: 발주처 의도 파악 및 맞춤형 전략 도출 능력 강화" },
+            { type: "fix", text: "분석 결과 캐싱 시 누락된 필드 자동 보완 로직 개선" }
+        ]
+    },
+    {
         version: "v1.4.0",
         date: "2026. 01. 11",
         type: "major",

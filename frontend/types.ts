@@ -12,6 +12,9 @@ export interface AnalysisSummary {
 }
 
 export interface StrategyConfig {
+  anchor_points: string[];
+  differentiation: string[];
+  risk_mitigation: string[];
   win_strategy: string[];
   references: string[];
 }

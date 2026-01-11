@@ -13,7 +13,10 @@ class AnalysisSummary(BaseModel):
     total_requirements_count: int = Field(description="추출된 전체 요구사항의 총 개수")
 
 class StrategyConfig(BaseModel):
-    win_strategy: List[str] = Field(description="분석 내용을 기반으로 한 수주 전략 및 제언")
+    anchor_points: List[str] = Field(description="발주처 핵심 요구사항 기반 앵커 포인트 (3~5개, 발주처가 중시하는 요소를 충족하는 구체적 방안)")
+    differentiation: List[str] = Field(description="경쟁사 대비 차별화 요소 (3~5개, 우리의 강점 및 경쟁 우위)")
+    risk_mitigation: List[str] = Field(description="사업 수행 리스크 및 완화 전략 (3~5개, 예상 리스크와 대응 방안)")
+    win_strategy: List[str] = Field(description="분석 내용을 기반으로 한 종합 수주 전략 및 제언")
     references: List[str] = Field(description="유사 사업 수행 경험 또는 참고할 만한 레퍼런스 제안")
 
 class RequirementCategory(BaseModel):
