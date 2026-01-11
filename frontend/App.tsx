@@ -91,7 +91,7 @@ const App: React.FC = () => {
   if (view === 'update') {
     return (
       <div className="min-h-screen text-slate-900 selection:bg-indigo-100 flex flex-col">
-        <UpdatePage onBack={() => setView('dashboard')} />
+        <UpdatePage onBack={() => setView('analysis')} />
 
       </div>
     );
@@ -268,7 +268,6 @@ const App: React.FC = () => {
               handleFileUpload={handleFileUpload}
               handleDeleteRFP={handleDeleteRFP}
               apiKeySet={!!apiKey}
-              personnelList={personnelList}
             />
           </div>
         )}

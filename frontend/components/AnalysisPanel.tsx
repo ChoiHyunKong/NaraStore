@@ -1,20 +1,18 @@
 import React, { useRef, useState } from 'react';
 import { FileText, Upload, Loader2, Download, SearchCode, AlertCircle, CheckCircle2 } from 'lucide-react';
-import ResourceAllocationView from './report/ResourceAllocationView';
 import SummaryCard from './report/SummaryCard';
 import RequirementBreakdown from './report/RequirementBreakdown';
 import StrategyView from './report/StrategyView';
-import { Personnel, RFP, TabType } from '../types';
+import { RFP, TabType } from '../types';
 
 interface AnalysisPanelProps {
   currentRFP: RFP | null;
   onUpload: (file: File) => void;
   isAnalyzing: boolean;
   apiKeySet?: boolean;
-  personnelList?: Personnel[];
 }
 
-const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isAnalyzing, apiKeySet = false, personnelList = [] }) => {
+const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isAnalyzing, apiKeySet = false }) => {
   const [activeTab, setActiveTab] = useState<TabType>('summary');
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,9 +27,8 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
   const triggerUpload = () => fileInputRef.current?.click();
 
   const handleDownloadPDF = async () => {
-    // ... (PDF logic same)
     if (!currentRFP) return;
-    // ...
+
     if (!currentRFP.structuredAnalysis) {
       alert('구조화된 분석 데이터가 없어 전체 리포트를 생성할 수 없습니다. (이전 버전 데이터)');
       return;
@@ -108,9 +105,6 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
             <button onClick={() => setActiveTab('strategy')} className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'strategy' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
               수주 전략
             </button>
-            <button onClick={() => setActiveTab('resource')} className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'resource' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-              인력 배분
-            </button>
           </div>
           <button
             onClick={handleDownloadPDF}
@@ -147,12 +141,6 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
                 {activeTab === 'summary' && <SummaryCard summary={currentRFP.structuredAnalysis.summary} />}
                 {activeTab === 'analysis' && <RequirementBreakdown requirements={currentRFP.structuredAnalysis.requirements} />}
                 {activeTab === 'strategy' && <StrategyView strategy={currentRFP.structuredAnalysis.strategy} />}
-                {activeTab === 'resource' && (
-                  <ResourceAllocationView
-                    data={currentRFP.structuredAnalysis}
-                    personnelList={personnelList}
-                  />
-                )}
               </>
             ) : (
               /* Legacy View Fallback */
@@ -161,7 +149,6 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
                   <AlertCircle className="w-4 h-4" />
                   <p>이 제안서는 구 버전 형식으로 저장되었습니다. 일부 시각화 기능이 제한될 수 있습니다.</p>
                 </div>
-                {/* Legacy tabs omitted for brevity, but Resource Allocation unavailable here */}
                 {activeTab === 'summary' && (
                   <div className="space-y-4">
                     <div className="bg-indigo-50/30 p-5 rounded-2xl border border-indigo-100/50 whitespace-pre-line text-sm">
@@ -181,12 +168,6 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
                     <div className="bg-violet-50/30 p-5 rounded-2xl border border-violet-100/50 whitespace-pre-line text-sm">
                       {currentRFP.strategy || "분석된 전략 정보가 없습니다."}
                     </div>
-                  </div>
-                )}
-                {activeTab === 'resource' && (
-                  <div className="p-10 text-center text-gray-400">
-                    이전 버전의 분석 데이터에서는 인력 배분 기능을 사용할 수 없습니다.
-                    <br />새로 분석을 진행해주세요.
                   </div>
                 )}
               </>

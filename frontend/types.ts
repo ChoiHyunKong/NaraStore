@@ -61,7 +61,7 @@ export interface TodoItem {
   completed: boolean;
 }
 
-export type TabType = 'summary' | 'analysis' | 'strategy' | 'resource';
+export type TabType = 'summary' | 'analysis' | 'strategy';
 
 // Dashboard Types
 export type PeriodType = '7days' | '1month' | '1year';

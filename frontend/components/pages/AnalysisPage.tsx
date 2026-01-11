@@ -14,7 +14,6 @@ interface AnalysisPageProps {
     handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleDeleteRFP: (id: string) => void;
     apiKeySet: boolean;
-    personnelList: import('../../types').Personnel[];
 }
 
 const AnalysisPage: React.FC<AnalysisPageProps> = ({
@@ -26,7 +25,6 @@ const AnalysisPage: React.FC<AnalysisPageProps> = ({
     handleFileUpload,
     handleDeleteRFP,
     apiKeySet,
-    personnelList
 }) => {
     return (
         <div className="flex flex-col min-h-[calc(100vh-80px)]">
@@ -49,7 +47,6 @@ const AnalysisPage: React.FC<AnalysisPageProps> = ({
                             onUpload={handleFileUpload}
                             isAnalyzing={isAnalyzing}
                             apiKeySet={apiKeySet}
-                            personnelList={personnelList}
                         />
                     </div>
 
