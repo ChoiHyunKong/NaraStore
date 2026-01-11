@@ -9,11 +9,30 @@ interface SummaryCardProps {
 const SummaryCard: React.FC<SummaryCardProps> = ({ summary }) => {
     return (
         <div className="space-y-6 animate-in slide-in-from-bottom duration-500">
-            {/* Overview Card */}
-            <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-indigo-900 mb-2">{summary.project_name}</h3>
+            {/* Overview & Purpose Section - NEW */}
+            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-2xl p-6 shadow-lg">
+                <h3 className="text-xl font-bold mb-2">{summary.project_name}</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                {/* Overview */}
+                {summary.overview && (
+                    <div className="mt-4">
+                        <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wider mb-2">📋 종합 요약</p>
+                        <p className="text-sm leading-relaxed text-white/90">{summary.overview}</p>
+                    </div>
+                )}
+
+                {/* Purpose */}
+                {summary.purpose && (
+                    <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                        <p className="text-indigo-200 text-xs font-semibold uppercase tracking-wider mb-2">🎯 사업 목적</p>
+                        <p className="text-sm leading-relaxed text-white font-medium">{summary.purpose}</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Meta Info Cards */}
+            <div className="bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-2xl p-6 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-indigo-50 shadow-sm">
                         <div className="bg-indigo-100 p-2 rounded-lg">
                             <Calendar className="w-5 h-5 text-indigo-600" />

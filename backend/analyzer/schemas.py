@@ -2,6 +2,8 @@ from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
 class AnalysisSummary(BaseModel):
+    overview: str = Field(description="사업의 배경, 핵심 내용, 중요성을 종합적으로 서술한 요약문 (3~5문장)")
+    purpose: str = Field(description="이 사업이 발주된 목적과 달성하고자 하는 최종 목표")
     expected_effects: List[str] = Field(description="프로젝트 수행 시 기대되는 이점 및 효과 목록")
     project_name: str = Field(description="제안요청서에 명시된 사업명")
     period: str = Field(description="사업 수행 기간")

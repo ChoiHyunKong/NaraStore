@@ -1,5 +1,7 @@
 // 구조화된 분석 결과 인터페이스 (Backend Pydantic 모델과 일치)
 export interface AnalysisSummary {
+  overview: string;
+  purpose: string;
   expected_effects: string[];
   project_name: string;
   period: string;
