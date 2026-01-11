@@ -77,8 +77,8 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
   };
 
   return (
-    <div className="glass-card rounded-3xl shadow-xl shadow-indigo-100/50 flex flex-col h-full overflow-hidden transition-all border-indigo-50/50 relative">
-      <div className="p-6 md:p-8">
+    <div className="glass-card rounded-3xl shadow-xl shadow-indigo-100/50 flex flex-col flex-1 h-full min-h-0 overflow-hidden transition-all border-indigo-50/50 relative">
+      <div className="flex-none p-6 md:p-8">
         <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
           <FileText className="w-5 h-5 text-indigo-600" />
           RFP 정밀 분석
@@ -141,7 +141,7 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ currentRFP, onUpload, isA
       </div>
 
       {/* Content Area with Scrollbar */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar px-6 md:px-8 pb-8 relative" id="report-content">
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-6 md:px-8 relative min-h-0" id="report-content">
         {isAnalyzing ? (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center space-y-4">
             <div className="relative">

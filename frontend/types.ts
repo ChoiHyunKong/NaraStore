@@ -62,6 +62,7 @@ export interface DashboardStats {
   errorCount: number;
 
   activityData: ActivityData[];
+  todoCompletionRate: number;
 }
 
 export interface Personnel {

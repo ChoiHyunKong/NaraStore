@@ -26,10 +26,10 @@ const AnalysisPage: React.FC<AnalysisPageProps> = ({
     apiKeySet
 }) => {
     return (
-        <div className="p-8 max-w-[1600px] mx-auto flex-1 w-full h-full flex flex-col overflow-hidden">
-            <div className="grid grid-cols-12 gap-8 h-full overflow-hidden">
+        <div className="p-8 max-w-[1600px] mx-auto w-full flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 80px)' }}>
+            <div className="grid grid-cols-12 gap-8 flex-1 min-h-0">
                 {/* Left Panel: RFP List */}
-                <div className="col-span-12 lg:col-span-4 xl:col-span-3 h-full overflow-hidden">
+                <div className="col-span-12 lg:col-span-4 xl:col-span-3 h-full overflow-hidden flex flex-col min-h-0">
                     <RFPList
                         rfps={rfps}
                         onSelectRFP={setSelectedRFP}
@@ -39,7 +39,7 @@ const AnalysisPage: React.FC<AnalysisPageProps> = ({
                 </div>
 
                 {/* Center Panel: RFP Analysis */}
-                <div className="col-span-12 lg:col-span-5 xl:col-span-6 h-full overflow-hidden">
+                <div className="col-span-12 lg:col-span-5 xl:col-span-6 h-full overflow-hidden flex flex-col min-h-0">
                     <AnalysisPanel
                         currentRFP={selectedRFP}
                         onUpload={handleFileUpload}
@@ -49,7 +49,7 @@ const AnalysisPage: React.FC<AnalysisPageProps> = ({
                 </div>
 
                 {/* Right Panel: To-do List */}
-                <div className="col-span-12 lg:col-span-3 h-full overflow-hidden">
+                <div className="col-span-12 lg:col-span-3 h-full overflow-hidden flex flex-col min-h-0">
                     <TodoPanel
                         currentRFPId={selectedRFP?.id}
                     />

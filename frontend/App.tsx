@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import Footer from './components/Footer';
+
 import UpdatePage from './components/UpdatePage';
 import LandingPage from './components/pages/LandingPage';
 import DashboardPage from './components/pages/DashboardPage';
@@ -92,14 +92,16 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen text-slate-900 selection:bg-indigo-100 flex flex-col">
         <UpdatePage onBack={() => setView('dashboard')} />
-        <Footer />
+
       </div>
     );
   }
 
   // Render Main Layout (Dashboard or Analysis)
+  const isFixedLayout = view === 'personnel' || view === 'analysis';
+
   return (
-    <div className="h-screen text-slate-900 selection:bg-indigo-100 flex flex-col overflow-hidden">
+    <div className={`${isFixedLayout ? 'h-screen overflow-hidden' : 'min-h-screen'} text-slate-900 selection:bg-indigo-100 flex flex-col`}>
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -168,7 +170,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-6">
           <div
             className="flex items-center gap-2 group cursor-pointer"
-            onClick={() => setView('dashboard')}
+            onClick={() => setView('analysis')}
           >
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:rotate-12 transition-transform">
               <LayoutDashboard className="text-white w-6 h-6" />
@@ -238,7 +240,7 @@ const App: React.FC = () => {
       </nav>
 
       {/* Page Content */}
-      <main className="flex-1 overflow-hidden flex flex-col relative w-full min-h-0">
+      <main className={`flex-1 flex flex-col relative w-full ${isFixedLayout ? 'overflow-hidden min-h-0' : ''}`}>
         {view === 'dashboard' ? (
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <DashboardPage
@@ -256,7 +258,7 @@ const App: React.FC = () => {
             />
           </div>
         ) : (
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col">
             <AnalysisPage
               rfps={rfps}
               selectedRFP={selectedRFP}
@@ -271,8 +273,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer - Hide on Personnel page to maximize space, or make flex-none */}
-      {view !== 'personnel' && <Footer />}
+      {/* Footer Removed by User Request */}
     </div>
   );
 };

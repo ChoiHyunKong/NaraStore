@@ -44,7 +44,7 @@ const RFPList: React.FC<RFPListProps> = ({ rfps, onSelectRFP, selectedRFPId, onD
   return (
     <div className="glass-card rounded-3xl shadow-xl shadow-indigo-100/50 flex flex-col h-full overflow-hidden transition-all border-indigo-50/50">
       {/* Search Header */}
-      <div className="p-5 border-b border-gray-100/50 bg-white/40">
+      <div className="flex-none p-5 border-b border-gray-100/50 bg-white/40">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-gray-800">제안서 목록</h2>
           <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full">
@@ -64,19 +64,19 @@ const RFPList: React.FC<RFPListProps> = ({ rfps, onSelectRFP, selectedRFPId, onD
       </div>
 
       {/* List Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 bg-white/30">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2 bg-white/30 min-h-0">
         {currentItems.map((rfp) => (
           <div
             key={rfp.id}
             onClick={() => onSelectRFP(rfp)}
             className={`group relative p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-0.5 ${selectedRFPId === rfp.id
-                ? 'bg-white border-indigo-500 ring-1 ring-indigo-500 shadow-md shadow-indigo-100'
-                : 'bg-white/60 border-transparent hover:border-indigo-100'
+              ? 'bg-white border-indigo-500 ring-1 ring-indigo-500 shadow-md shadow-indigo-100'
+              : 'bg-white/60 border-transparent hover:border-indigo-100'
               }`}
           >
             {/* Status Indicator Bar */}
             <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-r-full transition-colors ${rfp.status === 'completed' ? 'bg-emerald-400' :
-                rfp.status === 'error' ? 'bg-red-400' : 'bg-amber-400'
+              rfp.status === 'error' ? 'bg-red-400' : 'bg-amber-400'
               }`}></div>
 
             <div className="pl-3 pr-8">
@@ -88,7 +88,7 @@ const RFPList: React.FC<RFPListProps> = ({ rfps, onSelectRFP, selectedRFPId, onD
                 </span>
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${rfp.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                      rfp.status === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                    rfp.status === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                     }`}>
                     {rfp.status === 'completed' ? '분석완료' : rfp.status === 'error' ? '오류' : '분석중'}
                   </span>
@@ -133,7 +133,7 @@ const RFPList: React.FC<RFPListProps> = ({ rfps, onSelectRFP, selectedRFPId, onD
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="p-3 border-t border-gray-100/50 bg-white/40 flex justify-center gap-1">
+        <div className="flex-none p-3 border-t border-gray-100/50 bg-white/40 flex justify-center gap-1">
           <button
             disabled={page === 1}
             onClick={() => setPage(p => Math.max(1, p - 1))}
