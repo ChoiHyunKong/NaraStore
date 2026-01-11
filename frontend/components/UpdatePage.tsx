@@ -15,7 +15,8 @@ const updates = [
             { type: "new", text: "핵심 키워드(#태그) 및 발주처 중점 포인트 자동 추출 기능 추가" },
             { type: "improve", text: "AI 분석 요약 디자인 리뉴얼 (가독성 강화, 깔끔한 해시태그 스타일)" },
             { type: "improve", text: "분석 데이터 누락 방지 로직 적용 (자동 보완 기능)" },
-            { type: "improve", text: "제안요청서 분석 프롬프트 고도화 (정확도 향상)" }
+            { type: "improve", text: "제안요청서 분석 프롬프트 고도화 (정확도 향상)" },
+            { type: "improve", text: "요구사항 추출 정확도 대폭 개선 (완전성, 구체성, 중복 제거 강화)" }
         ]
     },
     {
